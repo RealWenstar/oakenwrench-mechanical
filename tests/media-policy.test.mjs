@@ -11,11 +11,11 @@ const ready = {
   videoFailed: false,
 };
 
-test("uses scrubbed video only when the device and user allow it", () => {
+test("lets iPhone attempt the local H.264 video instead of forcing poster mode", () => {
   assert.equal(selectMediaMode(ready), "video");
-  assert.equal(selectMediaMode({ ...ready, reducedMotion: true }), "poster");
+  assert.equal(selectMediaMode({ ...ready, reducedMotion: true }), "video");
   assert.equal(selectMediaMode({ ...ready, saveData: true }), "video");
-  assert.equal(selectMediaMode({ ...ready, canPlayVideo: false }), "poster");
+  assert.equal(selectMediaMode({ ...ready, canPlayVideo: false }), "video");
   assert.equal(selectMediaMode({ ...ready, videoFailed: true }), "poster");
 });
 
