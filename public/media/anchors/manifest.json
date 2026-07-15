@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "chapters": [
+    {
+      "id": "garage",
+      "label": "Garage",
+      "heightVh": 400,
+      "video": "/media/video/garage-entry-web.mp4",
+      "beats": [
+        { "progress": 0, "asset": "/media/anchors/garage-closed.png", "position": "50% 50%", "scale": 1 },
+        { "progress": 0.25, "asset": "/media/anchors/garage-closed.png", "position": "50% 54%", "scale": 1.03 },
+        { "progress": 0.5, "asset": "/media/anchors/garage-reveal.png", "position": "50% 50%", "scale": 1.02 },
+        { "progress": 0.75, "asset": "/media/anchors/garage-approved-b.jpg", "position": "50% 48%", "scale": 1.04 },
+        { "progress": 1, "asset": "/media/anchors/garage-approved-b.jpg", "position": "50% 48%", "scale": 1 }
+      ]
+    },
+    {
+      "id": "truck",
+      "label": "Truck",
+      "heightVh": 500,
+      "beats": [
+        { "progress": 0, "asset": "/media/anchors/garage-approved-b.jpg", "position": "50% 48%", "scale": 1 },
+        { "progress": 0.25, "asset": "/media/anchors/garage-approved-a.jpg", "position": "44% 48%", "scale": 1.04 },
+        { "progress": 0.5, "asset": "/media/anchors/truck-service.png", "position": "50% 47%", "scale": 1.02 },
+        { "progress": 0.75, "asset": "/media/anchors/truck-service.png", "position": "54% 43%", "scale": 1.07 },
+        { "progress": 1, "asset": "/media/anchors/truck-service.png", "position": "57% 40%", "scale": 1.12 }
+      ]
+    },
+    {
+      "id": "equipment",
+      "label": "Equipment",
+      "heightVh": 500,
+      "video": "/media/video/equipment-service-web.mp4",
+      "beats": [
+        { "progress": 0, "asset": "/media/anchors/truck-service.png", "position": "55% 44%", "scale": 1.08 },
+        { "progress": 0.25, "asset": "/media/anchors/equipment-service.png", "position": "50% 44%", "scale": 1 },
+        { "progress": 0.5, "asset": "/media/anchors/equipment-service.png", "position": "55% 42%", "scale": 1.05 },
+        { "progress": 0.75, "asset": "/media/anchors/equipment-service.png", "position": "59% 38%", "scale": 1.1 },
+        { "progress": 1, "asset": "/media/anchors/equipment-service.png", "position": "63% 35%", "scale": 1.15 }
+      ]
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "heightVh": 300,
+      "beats": [
+        { "progress": 0, "asset": "/media/anchors/equipment-service.png", "position": "58% 42%", "scale": 1.06 },
+        { "progress": 0.25, "asset": "/media/anchors/equipment-service.png", "position": "62% 39%", "scale": 1.1 },
+        { "progress": 0.5, "asset": "/media/anchors/equipment-service.png", "position": "66% 36%", "scale": 1.14 },
+        { "progress": 0.75, "asset": "/media/anchors/equipment-service.png", "position": "70% 33%", "scale": 1.18 },
+        { "progress": 1, "asset": "/media/anchors/equipment-service.png", "position": "74% 30%", "scale": 1.22 }
+      ]
+    }
+  ]
+}
