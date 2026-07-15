@@ -14,6 +14,18 @@ export function isActiveAtViewportCenter(
 
 export function progressToTime(progress: number, duration: number): number;
 
+export function shouldSeek(
+  currentTime: number,
+  targetTime: number,
+  seeking: boolean,
+  threshold?: number,
+): boolean;
+
+export function sourceWidthForScale(
+  sourceWidth: number,
+  scale: number,
+): number;
+
 export function getBeatWindow(
   progress: number,
   beats: ProgressBeat[],

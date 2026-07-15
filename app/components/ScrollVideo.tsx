@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { progressToTime } from "../story/progress.mjs";
+import { progressToTime, shouldSeek } from "../story/progress.mjs";
 
 export function ScrollVideo({
   active,
@@ -25,7 +25,7 @@ export function ScrollVideo({
     if (!active || !video || !Number.isFinite(video.duration)) return;
 
     const target = progressToTime(progress, video.duration);
-    if (Math.abs(video.currentTime - target) > 0.025) {
+    if (shouldSeek(video.currentTime, target, video.seeking)) {
       video.currentTime = target;
     }
   }, [active, progress]);
@@ -46,6 +46,7 @@ export function ScrollVideo({
       playsInline
       aria-hidden="true"
       onLoadedMetadata={syncTime}
+      onSeeked={syncTime}
       onError={onError}
     />
   );

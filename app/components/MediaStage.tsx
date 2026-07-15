@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getBeatWindow } from "../story/progress.mjs";
+import { getBeatWindow, sourceWidthForScale } from "../story/progress.mjs";
 import type { StoryChapter } from "../story/story";
 import { useMediaMode } from "../story/useMediaMode";
 import { ScrollVideo } from "./ScrollVideo";
@@ -23,6 +23,8 @@ export function MediaStage({
   const from =
     mediaMode === "poster" ? chapter.beats[0] : chapter.beats[fromIndex];
   const to = chapter.beats[toIndex];
+  const fromScale = from.scale + t * 0.015;
+  const toScale = to.scale - (1 - t) * 0.015;
 
   return (
     <div className="media-stage" aria-hidden="true">
@@ -34,7 +36,8 @@ export function MediaStage({
         style={{
           objectPosition: from.position,
           opacity: toIndex === fromIndex ? 1 : 1 - t,
-          transform: `scale(${from.scale + t * 0.015})`,
+          transform: `translateX(var(--media-shift-x, 0%)) scale(${fromScale})`,
+          width: `min(100%, ${sourceWidthForScale(1080, fromScale)}px)`,
         }}
       />
       {mediaMode === "crossfade" && toIndex !== fromIndex ? (
@@ -46,7 +49,8 @@ export function MediaStage({
           style={{
             objectPosition: to.position,
             opacity: t,
-            transform: `scale(${to.scale - (1 - t) * 0.015})`,
+            transform: `translateX(var(--media-shift-x, 0%)) scale(${toScale})`,
+            width: `min(100%, ${sourceWidthForScale(1080, toScale)}px)`,
           }}
         />
       ) : null}

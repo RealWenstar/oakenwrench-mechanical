@@ -13,6 +13,14 @@ export function progressToTime(progress, duration) {
   return Math.min(safeDuration, Math.max(0, progress * safeDuration));
 }
 
+export function shouldSeek(currentTime, targetTime, seeking, threshold = 0.06) {
+  return !seeking && Math.abs(currentTime - targetTime) > threshold;
+}
+
+export function sourceWidthForScale(sourceWidth, scale) {
+  return sourceWidth / Math.max(1, scale);
+}
+
 export function getBeatWindow(progress, beats) {
   if (!beats.length) {
     return { fromIndex: 0, toIndex: 0, t: 0 };

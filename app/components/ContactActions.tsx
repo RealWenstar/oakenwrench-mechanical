@@ -6,8 +6,11 @@ export function ContactActions() {
       </a>
       <div className="contact-secondary">
         <a href="https://wa.me/15879176991">WhatsApp</a>
+        <a href="https://m.me/61578764844956">Messenger</a>
+        <a href="https://www.facebook.com/profile.php?id=61578764844956">
+          Facebook
+        </a>
         <a href="mailto:Dave3052760@gmail.com">Email</a>
-        <a href="https://www.facebook.com/share/1DTYw1dYPE/">Facebook</a>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
   normalizeProgress,
   progressToTime,
 } from "../app/story/progress.mjs";
+import * as progressHelpers from "../app/story/progress.mjs";
 
 test("normalizes and clamps chapter scroll progress", () => {
   assert.equal(normalizeProgress(50, 100, 500), 0);
@@ -50,4 +51,17 @@ test("maps continuous chapter progress onto scrub-video time", () => {
   assert.equal(progressToTime(0.5, 5), 2.5);
   assert.equal(progressToTime(1.2, 5), 5);
   assert.equal(progressToTime(-0.2, 5), 0);
+});
+
+test("waits for an in-flight video seek before scheduling the latest scrub target", () => {
+  assert.equal(typeof progressHelpers.shouldSeek, "function");
+  assert.equal(progressHelpers.shouldSeek(1, 2, true), false);
+  assert.equal(progressHelpers.shouldSeek(1, 1.04, false), false);
+  assert.equal(progressHelpers.shouldSeek(1, 1.08, false), true);
+});
+
+test("keeps scaled desktop imagery inside its native source width", () => {
+  assert.equal(typeof progressHelpers.sourceWidthForScale, "function");
+  assert.equal(progressHelpers.sourceWidthForScale(1080, 1), 1080);
+  assert.equal(progressHelpers.sourceWidthForScale(1080, 1.2), 900);
 });
