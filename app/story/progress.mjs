@@ -13,6 +13,36 @@ export function progressToTime(progress, duration) {
   return Math.min(safeDuration, Math.max(0, progress * safeDuration));
 }
 
+export function getTimelineWindow(progress, timeline) {
+  const safeProgress = Math.min(1, Math.max(0, progress));
+  const index = Math.max(
+    0,
+    timeline.findIndex(
+      ({ start, end }, candidate) =>
+        safeProgress >= start &&
+        (safeProgress < end || candidate === timeline.length - 1),
+    ),
+  );
+  const chapter = timeline[index];
+  const span = Math.max(Number.EPSILON, chapter.end - chapter.start);
+
+  const localProgress = Math.min(
+    1,
+    Math.max(0, (safeProgress - chapter.start) / span),
+  );
+
+  return {
+    id: chapter.id,
+    index,
+    localProgress: Math.round(localProgress * 1_000_000) / 1_000_000,
+  };
+}
+
+export function getChapterJumpProgress(chapter) {
+  if (chapter.start === 0) return 0;
+  return Math.min(chapter.end, chapter.start + 0.001);
+}
+
 export function shouldSeek(currentTime, targetTime, seeking, threshold = 0.06) {
   return !seeking && Math.abs(currentTime - targetTime) > threshold;
 }

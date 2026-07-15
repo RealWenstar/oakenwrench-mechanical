@@ -34,7 +34,7 @@ export function TopBar({ compact }: { compact: boolean }) {
     >
       <a
         className="brand-beacon"
-        href="#garage"
+        href="#story"
         aria-label="Oakenwrench Mechanical — back to the garage"
       >
         <img

@@ -3,6 +3,8 @@ import test from "node:test";
 
 import {
   getBeatWindow,
+  getChapterJumpProgress,
+  getTimelineWindow,
   isActiveAtViewportCenter,
   normalizeProgress,
   progressToTime,
@@ -51,6 +53,31 @@ test("maps continuous chapter progress onto scrub-video time", () => {
   assert.equal(progressToTime(0.5, 5), 2.5);
   assert.equal(progressToTime(1.2, 5), 5);
   assert.equal(progressToTime(-0.2, 5), 0);
+});
+
+test("maps global progress into one continuous chapter window", () => {
+  const timeline = [
+    { id: "garage", start: 0, end: 0.32 },
+    { id: "truck", start: 0.32, end: 0.62 },
+    { id: "equipment", start: 0.62, end: 0.84 },
+    { id: "contact", start: 0.84, end: 1 },
+  ];
+
+  assert.deepEqual(getTimelineWindow(0.47, timeline), {
+    id: "truck",
+    index: 1,
+    localProgress: 0.5,
+  });
+  assert.deepEqual(getTimelineWindow(1, timeline), {
+    id: "contact",
+    index: 3,
+    localProgress: 1,
+  });
+});
+
+test("navigation lands inside the requested timeline chapter", () => {
+  assert.equal(getChapterJumpProgress({ start: 0, end: 0.32 }), 0);
+  assert.equal(getChapterJumpProgress({ start: 0.62, end: 0.84 }), 0.621);
 });
 
 test("waits for an in-flight video seek before scheduling the latest scrub target", () => {

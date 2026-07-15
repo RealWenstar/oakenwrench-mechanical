@@ -1,44 +1,43 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useRef } from "react";
 import { ChapterProgress } from "./ChapterProgress";
-import { StoryChapter } from "./StoryChapter";
+import { StoryOverlay } from "./StoryOverlay";
+import { TimelineMedia } from "./TimelineMedia";
 import { TopBar } from "./TopBar";
-import { storyChapters, type StoryChapterId } from "../story/story";
+import { getTimelineWindow } from "../story/progress.mjs";
+import { storyTimeline } from "../story/story";
+import { useStoryProgress } from "../story/useStoryProgress";
 
 export function StoryExperience() {
-  const [activeId, setActiveId] = useState<StoryChapterId>("garage");
-  const [progress, setProgress] = useState(0);
-
-  const handleProgress = useCallback(
-    (id: StoryChapterId, value: number) => {
-      if (id === activeId) setProgress(value);
-    },
-    [activeId],
-  );
-
-  const handleActive = useCallback((id: StoryChapterId) => {
-    setActiveId(id);
-  }, []);
-
-  const activeIndex = storyChapters.findIndex(({ id }) => id === activeId);
-  const prefetchedId = storyChapters[activeIndex + 1]?.id;
+  const storyRef = useRef<HTMLElement>(null);
+  const progress = useStoryProgress(storyRef);
+  const active = getTimelineWindow(progress, storyTimeline.timeline);
 
   return (
     <main className="site-shell">
-      <TopBar compact={activeId !== "garage"} />
-      {storyChapters.map((chapter) => (
-        <StoryChapter
-          key={chapter.id}
-          chapter={chapter}
-          onActive={handleActive}
-          onProgress={handleProgress}
-          preloadVideo={chapter.id === activeId || chapter.id === prefetchedId}
-        />
-      ))}
+      <TopBar compact={progress > 0.12} />
+      <section
+        ref={storyRef}
+        id="story"
+        className="story-timeline"
+        style={{ height: `${storyTimeline.scrollVh}svh` }}
+      >
+        <div
+          className="sticky-stage"
+          data-progress={progress.toFixed(4)}
+          data-chapter={active.id}
+        >
+          <TimelineMedia story={storyTimeline} progress={progress} />
+          <StoryOverlay
+            chapterId={active.id}
+            progress={active.localProgress}
+          />
+        </div>
+      </section>
       <ChapterProgress
-        chapters={storyChapters}
-        activeId={activeId}
+        chapters={storyTimeline.timeline}
+        activeId={active.id}
         progress={progress}
       />
     </main>

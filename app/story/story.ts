@@ -2,20 +2,31 @@ import manifest from "@/public/media/anchors/manifest.json";
 
 export type StoryChapterId = "garage" | "truck" | "equipment" | "contact";
 
-export type StoryBeat = {
+export type TimelineChapter = {
+  id: StoryChapterId;
+  label: string;
+  start: number;
+  end: number;
+};
+
+export type FallbackFrame = {
   progress: number;
   asset: string;
   position: string;
-  scale: number;
 };
 
-export type StoryChapter = {
-  id: StoryChapterId;
-  label: string;
-  heightVh: number;
-  video?: string;
-  mobileVideo?: string;
-  beats: StoryBeat[];
+export type StoryTimeline = {
+  version: 3;
+  scrollVh: number;
+  durationSeconds: number;
+  video: string;
+  mobileVideo: string;
+  poster: string;
+  fallbackFps: number;
+  fallbackFrameCount: number;
+  fallbackFramePattern: string;
+  timeline: TimelineChapter[];
+  fallbackFrames: FallbackFrame[];
 };
 
-export const storyChapters = manifest.chapters as StoryChapter[];
+export const storyTimeline = manifest as StoryTimeline;

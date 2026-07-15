@@ -4,55 +4,79 @@ import { useCallback, useEffect, useRef } from "react";
 import { progressToTime, shouldSeek } from "../story/progress.mjs";
 
 export function ScrollVideo({
-  active,
   mobileSrc,
   onError,
+  onStall,
   poster,
-  preload,
   progress,
   src,
 }: {
-  active: boolean;
-  mobileSrc?: string;
+  mobileSrc: string;
   onError: () => void;
+  onStall: () => void;
   poster: string;
-  preload: boolean;
   progress: number;
   src: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const targetRef = useRef(0);
+  const stallTimer = useRef<number | null>(null);
 
-  const syncTime = useCallback(() => {
+  const clearStallTimer = useCallback(() => {
+    if (stallTimer.current !== null) window.clearTimeout(stallTimer.current);
+    stallTimer.current = null;
+  }, []);
+
+  const seekToLatestTarget = useCallback(() => {
     const video = videoRef.current;
-    if (!active || !video || !Number.isFinite(video.duration)) return;
+    if (!video || !Number.isFinite(video.duration)) return;
 
-    const target = progressToTime(progress, video.duration);
-    if (shouldSeek(video.currentTime, target, video.seeking)) {
-      video.currentTime = target;
-    }
-  }, [active, progress]);
+    const target = progressToTime(targetRef.current, video.duration);
+    if (!shouldSeek(video.currentTime, target, video.seeking, 0.035)) return;
+
+    clearStallTimer();
+    stallTimer.current = window.setTimeout(onStall, 750);
+    video.currentTime = target;
+  }, [clearStallTimer, onStall]);
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(syncTime);
+    targetRef.current = progress;
+    const frame = window.requestAnimationFrame(seekToLatestTarget);
     return () => window.cancelAnimationFrame(frame);
-  }, [syncTime]);
+  }, [progress, seekToLatestTarget]);
+
+  useEffect(() => clearStallTimer, [clearStallTimer]);
+
+  const handleLoadedMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // A muted one-frame play primes iOS' decoder before the first inertial swipe.
+    void video.play().then(() => {
+      video.pause();
+      seekToLatestTarget();
+    }).catch(seekToLatestTarget);
+  }, [seekToLatestTarget]);
+
+  const handleSeeked = useCallback(() => {
+    clearStallTimer();
+    seekToLatestTarget();
+  }, [clearStallTimer, seekToLatestTarget]);
 
   return (
     <video
       ref={videoRef}
       className="media-video"
       poster={poster}
-      preload={preload ? "auto" : "none"}
+      preload="auto"
       muted
       playsInline
       aria-hidden="true"
-      onLoadedMetadata={syncTime}
-      onSeeked={syncTime}
+      onLoadedMetadata={handleLoadedMetadata}
+      onSeeked={handleSeeked}
       onError={onError}
     >
-      {mobileSrc ? (
-        <source media="(max-width: 799px)" src={mobileSrc} type="video/mp4" />
-      ) : null}
+      <source media="(max-width: 799px)" src={mobileSrc} type="video/mp4" />
       <source src={src} type="video/mp4" />
     </video>
   );

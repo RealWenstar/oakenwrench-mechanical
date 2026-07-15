@@ -21,10 +21,9 @@ test("server-renders the complete Oakenwrench story shell", async () => {
   assert.match(html, /<title>Oakenwrench Mechanical \| Calgary Repairs<\/title>/i);
   assert.match(html, /Oakenwrench Mechanical/);
   assert.match(html, /Heavy-duty\. Small engines\. Real work\./);
-  assert.match(html, /id="garage"/);
-  assert.match(html, /id="truck"/);
-  assert.match(html, /id="equipment"/);
-  assert.match(html, /id="contact"/);
+  assert.match(html, /id="story"/);
+  assert.equal((html.match(/class="sticky-stage"/g) ?? []).length, 1);
+  assert.doesNotMatch(html, /class="story-chapter"/);
   assert.match(html, /src="\/media\/brand\/oakenwrench-mark\.png"/);
   assert.doesNotMatch(html, /Call Dave|call-pill/);
   assert.equal((html.match(/<h1\b/gi) ?? []).length, 1);
