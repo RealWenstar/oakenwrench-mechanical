@@ -18,11 +18,14 @@ test("publishes Dave's direct Facebook, Messenger, and WhatsApp contact links", 
   );
 });
 
-test("uses the supplied Oakenwrench logo in the persistent header", async () => {
+test("uses a centered transparent Oakenwrench scroll beacon without a call pill", async () => {
   const source = await readFile(
     new URL("app/components/TopBar.tsx", projectRoot),
     "utf8",
   );
 
-  assert.match(source, /\/media\/brand\/oakenwrench-logo-source\.jpg/);
+  assert.match(source, /\/media\/brand\/oakenwrench-mark\.png/);
+  assert.match(source, /data-scrolling/);
+  assert.match(source, /passive: true/);
+  assert.doesNotMatch(source, /Call Dave|call-pill/);
 });

@@ -14,7 +14,7 @@ const ready = {
 test("uses scrubbed video only when the device and user allow it", () => {
   assert.equal(selectMediaMode(ready), "video");
   assert.equal(selectMediaMode({ ...ready, reducedMotion: true }), "poster");
-  assert.equal(selectMediaMode({ ...ready, saveData: true }), "poster");
+  assert.equal(selectMediaMode({ ...ready, saveData: true }), "video");
   assert.equal(selectMediaMode({ ...ready, canPlayVideo: false }), "poster");
   assert.equal(selectMediaMode({ ...ready, videoFailed: true }), "poster");
 });

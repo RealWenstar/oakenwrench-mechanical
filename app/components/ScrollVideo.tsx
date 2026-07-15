@@ -5,6 +5,7 @@ import { progressToTime, shouldSeek } from "../story/progress.mjs";
 
 export function ScrollVideo({
   active,
+  mobileSrc,
   onError,
   poster,
   preload,
@@ -12,6 +13,7 @@ export function ScrollVideo({
   src,
 }: {
   active: boolean;
+  mobileSrc?: string;
   onError: () => void;
   poster: string;
   preload: boolean;
@@ -39,7 +41,6 @@ export function ScrollVideo({
     <video
       ref={videoRef}
       className="media-video"
-      src={src}
       poster={poster}
       preload={preload ? "auto" : "none"}
       muted
@@ -48,6 +49,11 @@ export function ScrollVideo({
       onLoadedMetadata={syncTime}
       onSeeked={syncTime}
       onError={onError}
-    />
+    >
+      {mobileSrc ? (
+        <source media="(max-width: 799px)" src={mobileSrc} type="video/mp4" />
+      ) : null}
+      <source src={src} type="video/mp4" />
+    </video>
   );
 }

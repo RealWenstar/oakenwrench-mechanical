@@ -22,8 +22,7 @@ export function StoryExperience() {
   }, []);
 
   const activeIndex = storyChapters.findIndex(({ id }) => id === activeId);
-  const prefetchedId =
-    progress >= 0.6 ? storyChapters[activeIndex + 1]?.id : undefined;
+  const prefetchedId = storyChapters[activeIndex + 1]?.id;
 
   return (
     <main className="site-shell">

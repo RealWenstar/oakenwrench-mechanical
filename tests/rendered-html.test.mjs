@@ -25,7 +25,8 @@ test("server-renders the complete Oakenwrench story shell", async () => {
   assert.match(html, /id="truck"/);
   assert.match(html, /id="equipment"/);
   assert.match(html, /id="contact"/);
-  assert.match(html, /href="tel:\+15879176991"/);
+  assert.match(html, /src="\/media\/brand\/oakenwrench-mark\.png"/);
+  assert.doesNotMatch(html, /Call Dave|call-pill/);
   assert.equal((html.match(/<h1\b/gi) ?? []).length, 1);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/);
 });

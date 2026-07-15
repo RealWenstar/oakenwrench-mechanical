@@ -57,6 +57,7 @@ export function MediaStage({
       {mediaMode === "video" && chapter.video ? (
         <ScrollVideo
           active={active}
+          mobileSrc={chapter.mobileVideo}
           onError={() => setVideoFailed(true)}
           src={chapter.video}
           poster={from.asset}

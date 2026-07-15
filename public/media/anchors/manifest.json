@@ -6,6 +6,7 @@
       "label": "Garage",
       "heightVh": 400,
       "video": "/media/video/garage-entry-web.mp4",
+      "mobileVideo": "/media/video/garage-entry-mobile.mp4",
       "beats": [
         { "progress": 0, "asset": "/media/anchors/garage-closed.png", "position": "50% 50%", "scale": 1 },
         { "progress": 0.25, "asset": "/media/anchors/garage-closed.png", "position": "50% 54%", "scale": 1.03 },
@@ -18,6 +19,8 @@
       "id": "truck",
       "label": "Truck",
       "heightVh": 500,
+      "video": "/media/video/truck-service-web.mp4",
+      "mobileVideo": "/media/video/truck-service-mobile.mp4",
       "beats": [
         { "progress": 0, "asset": "/media/anchors/garage-approved-b.jpg", "position": "50% 48%", "scale": 1 },
         { "progress": 0.25, "asset": "/media/anchors/garage-approved-a.jpg", "position": "44% 48%", "scale": 1.04 },
@@ -31,6 +34,7 @@
       "label": "Equipment",
       "heightVh": 500,
       "video": "/media/video/equipment-service-web.mp4",
+      "mobileVideo": "/media/video/equipment-service-mobile.mp4",
       "beats": [
         { "progress": 0, "asset": "/media/anchors/truck-service.png", "position": "55% 44%", "scale": 1.08 },
         { "progress": 0.25, "asset": "/media/anchors/equipment-service.png", "position": "50% 44%", "scale": 1 },

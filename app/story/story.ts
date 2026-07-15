@@ -14,6 +14,7 @@ export type StoryChapter = {
   label: string;
   heightVh: number;
   video?: string;
+  mobileVideo?: string;
   beats: StoryBeat[];
 };
 
