@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { selectMediaMode, type MediaMode } from "./media-policy.mjs";
+import { selectMediaMode } from "./media-policy.mjs";
+
+type MediaMode = "poster" | "crossfade" | "video";
 
 type NetworkNavigator = Navigator & {
   connection?: { saveData?: boolean };
