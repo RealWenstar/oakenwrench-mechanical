@@ -29,3 +29,17 @@ test("uses a centered transparent Oakenwrench scroll beacon without a call pill"
   assert.match(source, /passive: true/);
   assert.doesNotMatch(source, /Call Dave|call-pill/);
 });
+
+test("keeps the amber signal on the logo and removes the full-stage light wash", async () => {
+  const [media, css] = await Promise.all([
+    readFile(
+      new URL("app/components/TimelineMedia.tsx", projectRoot),
+      "utf8",
+    ),
+    readFile(new URL("app/globals.css", projectRoot), "utf8"),
+  ]);
+
+  assert.doesNotMatch(media, /AtmosphereCanvas/);
+  assert.doesNotMatch(css, /\.atmosphere-canvas/);
+  assert.match(css, /\.brand-beacon::before/);
+});

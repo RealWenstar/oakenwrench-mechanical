@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import type { StoryTimeline } from "../story/story";
-import { AtmosphereCanvas } from "./AtmosphereCanvas";
 import { FrameSequence } from "./FrameSequence";
 import { ScrollVideo } from "./ScrollVideo";
 
@@ -40,7 +39,6 @@ export function TimelineMedia({
           progress={progress}
         />
       )}
-      <AtmosphereCanvas progress={progress} />
       <div className="media-vignette" />
     </div>
   );
