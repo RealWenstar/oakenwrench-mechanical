@@ -1,7 +1,7 @@
 "use client";
 
 type Cue = { id: string; at: number; label?: string };
-type Lane = { id: "visual" | "audio" | "ui" | "qa"; cues: Cue[] };
+export type ConstructionLane = { id: "visual" | "audio" | "ui" | "qa"; cues: Cue[] };
 
 const laneLabels = {
   audio: "Audio",
@@ -18,7 +18,7 @@ export function ConstructionTimeline({
   lanes,
   progress,
 }: {
-  lanes: Lane[];
+  lanes: ConstructionLane[];
   progress: number;
 }) {
   return (

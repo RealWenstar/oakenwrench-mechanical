@@ -7,7 +7,7 @@ import { TopBar } from "../components/TopBar";
 import { getChapterJumpProgress, getTimelineWindow } from "../story/progress.mjs";
 import type { StoryChapterId } from "../story/story";
 import { useStoryProgress } from "../story/useStoryProgress";
-import { ConstructionTimeline } from "./components/ConstructionTimeline";
+import { ConstructionTimeline, type ConstructionLane } from "./components/ConstructionTimeline";
 import { SoundControl } from "./components/SoundControl";
 import { StorySoundscape } from "./components/StorySoundscape";
 import { V2ChapterNav, type V2Chapter } from "./components/V2ChapterNav";
@@ -24,6 +24,7 @@ type Variant = {
 
 const chapters = manifest.chapters as V2Chapter[];
 const variant = manifest.variants[0] as Variant;
+const lanes = manifest.lanes as ConstructionLane[];
 
 export function V2Experience() {
   const storyRef = useRef<HTMLElement>(null);
@@ -82,7 +83,7 @@ export function V2Experience() {
                 <span className="v2-lab-label">Motion lab · v2</span>
                 <SoundControl defaultEnabled={false} onChange={setSoundEnabled} />
               </div>
-              <ConstructionTimeline lanes={manifest.lanes} progress={progress} />
+              <ConstructionTimeline lanes={lanes} progress={progress} />
               <V2ChapterNav activeId={active.id} chapters={chapters} onSelect={jumpTo} />
             </div>
           </V2MobileShell>
