@@ -1,5 +1,16 @@
 # Kling MCP playbook — Oakenwrench Mechanical
 
+## 2026-07-16 — v2 assembly decision
+
+Kling/Canvas remains the shot and keyframe generator, but it is not the final
+editorial timeline. The current v2 follows the single user-edited 50.54 s
+master without additional cuts. Each accepted output must therefore be judged
+twice: first as a standalone generated shot, then at its exact timeline join.
+
+The website consumes a video-only scrub master with a four-frame GOP. The
+matching native audio is exported as one separate opt-in track; never leave it
+embedded in the scroll-scrub MP4.
+
 **Purpose:** preserve the proven workflow for creating the next generation of
 scroll-film assets without losing visual continuity, mobile performance or
 Kling credits. “Cling MCP” in project notes refers to **Kling MCP**.

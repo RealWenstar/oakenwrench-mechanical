@@ -1,5 +1,10 @@
 # Oakenwrench v2 — Kling Canvas continuity design
 
+> Historical generation brief. Superseded for assembly by
+> `2026-07-16-mobile-v2-technical-design.md`: accepted frames are now selected and
+> edited manually, while Canvas remains a source of individual shots rather than
+> the final continuous timeline.
+
 ## Goal
 
 Prepare a detailed Kling Canvas storyboard for a single vertical camera flight

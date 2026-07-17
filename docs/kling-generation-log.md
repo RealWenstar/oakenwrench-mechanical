@@ -1,5 +1,15 @@
 # Kling production generation log
 
+## 2026-07-16 — assembled mobile v2
+
+- Source: user-assembled 50.538667 s vertical master, 608×1088, 30 fps.
+- Latest scrub master: 50.533 s, complete source, video-only.
+- Matching opt-in audio: 50.538 s AAC stereo.
+- Poster: first frame extracted from the same latest cut.
+- Media build is reproducible via `scripts/build-v2-media.ps1`.
+- Assembly source of truth: `docs/V2_MOTION_ANALYSIS.md`.
+- No Kling credits were spent in this assembly pass.
+
 Date: 2026-07-14  
 Account: VIP Standard, user 5343529  
 Credit guard: stop before 1000 credits  

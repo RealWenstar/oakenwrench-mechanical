@@ -1,5 +1,5 @@
-import { StoryExperience } from "./components/StoryExperience";
+import { V2Experience } from "./v2/V2Experience";
 
 export default function Home() {
-  return <StoryExperience />;
+  return <V2Experience />;
 }
