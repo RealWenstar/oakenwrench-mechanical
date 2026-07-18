@@ -84,7 +84,8 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: max(0.55rem, env(safe-area-inset-top));
   transition: background 800ms ease;
   left: 0;
   transform: none;
@@ -105,18 +106,22 @@ a {
 
 .topbar[data-state="loading"] .brand-beacon {
   width: clamp(10rem, 45vw, 14rem);
-  transform: none;
+  transform: translateY(calc(50svh - max(0.55rem, env(safe-area-inset-top)) - 34px));
   left: auto;
   pointer-events: auto;
-  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease;
+  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease, opacity 800ms ease;
+}
+
+.v2-phone-stage .topbar[data-state="loading"] .brand-beacon {
+  transform: translateY(calc(50% - max(0.55rem, env(safe-area-inset-top)) - 34px));
 }
 
 .topbar[data-state="ready"] .brand-beacon {
   width: clamp(7.2rem, 34vw, 10rem);
-  transform: translateY(calc(-50svh + max(0.55rem, env(safe-area-inset-top)) + 34px));
+  transform: translateY(0);
   left: auto;
   pointer-events: auto;
-  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease;
+  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease, opacity 800ms ease;
 }
 
 .preloader-bar-container {
@@ -126,6 +131,23 @@ a {
   margin-top: 1.5rem;
   overflow: hidden;
   position: relative;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease, transform 1000ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.topbar[data-state="loading"] .preloader-bar-container {
+  opacity: 1;
+  transform: translateY(calc(50svh - max(0.55rem, env(safe-area-inset-top)) - 34px));
+}
+
+.v2-phone-stage .topbar[data-state="loading"] .preloader-bar-container {
+  transform: translateY(calc(50% - max(0.55rem, env(safe-area-inset-top)) - 34px));
+}
+
+.topbar[data-state="ready"] .preloader-bar-container {
+  opacity: 0;
+  transform: translateY(0);
 }
 
 .preloader-bar-fill {
@@ -143,6 +165,13 @@ a {
   margin-top: 1.5rem;
   animation: cue-pulse 1.8s ease-in-out infinite;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease, transform 1000ms cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translateY(0);
+}
+
+.topbar[data-state="ready"] .tap-cue {
+  opacity: 1;
 }
 
 
