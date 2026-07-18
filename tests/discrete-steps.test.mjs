@@ -84,3 +84,17 @@ test("gesture listener lifecycle cannot cancel or stale the active animation", a
     "Gesture listeners should not rebind for every visual progress frame",
   );
 });
+
+test("tap cue pulse is scoped to the ready state", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const cssPath = path.join(process.cwd(), "app", "globals.css");
+  const content = await fs.readFile(cssPath, "utf8");
+
+  const baseRule = content.match(/\.tap-cue\s*\{([^}]*)\}/)?.[1] ?? "";
+  const readyRule = content.match(/\.topbar\[data-state="ready"\] \.tap-cue\s*\{([^}]*)\}/)?.[1] ?? "";
+
+  assert.doesNotMatch(baseRule, /animation:/, "Hidden cue must not keep a pulse animation active");
+  assert.match(baseRule, /pointer-events:\s*none/, "Cue must never intercept logo interaction");
+  assert.match(readyRule, /animation:\s*cue-pulse/, "Only the ready cue should pulse");
+});

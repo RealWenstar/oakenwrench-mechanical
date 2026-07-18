@@ -163,7 +163,6 @@ a {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-top: 1.5rem;
-  animation: cue-pulse 1.8s ease-in-out infinite;
   pointer-events: none;
   opacity: 0;
   transition: opacity 300ms ease, transform 1000ms cubic-bezier(0.25, 1, 0.5, 1);
@@ -172,6 +171,7 @@ a {
 
 .topbar[data-state="ready"] .tap-cue {
   opacity: 1;
+  animation: cue-pulse 1.8s ease-in-out infinite;
 }
 
 
