@@ -43,21 +43,6 @@ export function TopBar({
       data-scrolling={scrolling}
       data-state={loadingState}
     >
-      {loadingState === "loading" && (
-        <div className="preloader-bar-container" aria-hidden="true">
-          <div
-            className="preloader-bar-fill"
-            style={{ width: `${Math.round(bufferProgress * 100)}%` }}
-          />
-        </div>
-      )}
-
-      {loadingState === "ready" && (
-        <div className="tap-cue" aria-hidden="true">
-          Tap logo to open
-        </div>
-      )}
-
       <a
         className="brand-beacon"
         href="#story"
@@ -77,6 +62,21 @@ export function TopBar({
           draggable={false}
         />
       </a>
+
+      {loadingState === "loading" && (
+        <div className="preloader-bar-container" aria-hidden="true">
+          <div
+            className="preloader-bar-fill"
+            style={{ width: `${Math.round(bufferProgress * 100)}%` }}
+          />
+        </div>
+      )}
+
+      {loadingState === "ready" && (
+        <div className="tap-cue" aria-hidden="true">
+          Tap logo to open
+        </div>
+      )}
     </header>
   );
 }

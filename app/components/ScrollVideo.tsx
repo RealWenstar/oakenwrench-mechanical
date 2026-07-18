@@ -51,10 +51,14 @@ export function ScrollVideo({
 
   useEffect(() => clearStallTimer, [clearStallTimer]);
 
-  const handleLoadedMetadata = useCallback(() => {
+  const primedRef = useRef(false);
+
+  const primeAndReady = useCallback(() => {
+    if (primedRef.current) return;
     const video = videoRef.current;
     if (!video) return;
 
+    primedRef.current = true;
     // A muted one-frame play primes iOS' decoder before the first inertial swipe.
     void video.play().then(() => {
       video.pause();
@@ -66,10 +70,37 @@ export function ScrollVideo({
     });
   }, [seekToLatestTarget, onReady]);
 
+  // Check readiness immediately and on events to prevent race conditions
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.readyState >= 2) {
+      primeAndReady();
+    }
+
+    const checkState = () => {
+      if (video.readyState >= 2) {
+        primeAndReady();
+      }
+    };
+
+    video.addEventListener("loadedmetadata", checkState);
+    video.addEventListener("canplay", checkState);
+    video.addEventListener("canplaythrough", checkState);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", checkState);
+      video.removeEventListener("canplay", checkState);
+      video.removeEventListener("canplaythrough", checkState);
+    };
+  }, [primeAndReady]);
+
   const handleSeeked = useCallback(() => {
     clearStallTimer();
     seekToLatestTarget();
   }, [clearStallTimer, seekToLatestTarget]);
+
 
   const handleProgress = useCallback(() => {
     const video = videoRef.current;
@@ -90,7 +121,8 @@ export function ScrollVideo({
       muted
       playsInline
       aria-hidden="true"
-      onLoadedMetadata={handleLoadedMetadata}
+      onLoadedMetadata={primeAndReady}
+      onCanPlay={primeAndReady}
       onSeeked={handleSeeked}
       onProgress={handleProgress}
       onError={onError}

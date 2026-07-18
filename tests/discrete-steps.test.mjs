@@ -34,3 +34,19 @@ test("transition lock helper decides correctly", () => {
   // If not animating and cooldown passed, allow gesture
   assert.equal(shouldProcessGesture(false, 800, 1000, 150), true);
 });
+
+test("TopBar renders preloader bar below the brand logo", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const topbarPath = path.join(process.cwd(), "app", "components", "TopBar.tsx");
+  const content = await fs.readFile(topbarPath, "utf8");
+
+  // Verify brand-beacon appears before preloader-bar-container in the source code
+  const logoIndex = content.indexOf("className=\"brand-beacon\"");
+  const preloaderIndex = content.indexOf("className=\"preloader-bar-container\"");
+
+  assert.ok(logoIndex !== -1, "Logo should be present");
+  assert.ok(preloaderIndex !== -1, "Preloader should be present");
+  assert.ok(logoIndex < preloaderIndex, "Logo must be rendered above the preloader line");
+});
+

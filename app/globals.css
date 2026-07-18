@@ -103,8 +103,7 @@ a {
   pointer-events: none;
 }
 
-.topbar[data-state="loading"] .brand-beacon,
-.topbar[data-state="ready"] .brand-beacon {
+.topbar[data-state="loading"] .brand-beacon {
   width: clamp(10rem, 45vw, 14rem);
   transform: none;
   left: auto;
@@ -113,7 +112,11 @@ a {
 }
 
 .topbar[data-state="ready"] .brand-beacon {
-  transform: translateY(-24vh);
+  width: clamp(7.2rem, 34vw, 10rem);
+  transform: translateY(calc(-50svh + max(0.55rem, env(safe-area-inset-top)) + 34px));
+  left: auto;
+  pointer-events: auto;
+  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease;
 }
 
 .preloader-bar-container {
@@ -140,9 +143,8 @@ a {
   margin-top: 1.5rem;
   animation: cue-pulse 1.8s ease-in-out infinite;
   pointer-events: none;
-  position: absolute;
-  bottom: 22%;
 }
+
 
 
 .brand-beacon {
