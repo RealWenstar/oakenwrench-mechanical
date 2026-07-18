@@ -5,7 +5,6 @@ import {
   getNextStep,
   getPrevStep,
   getClosestStepIndex,
-  getStepProgress,
   shouldProcessGesture
 } from "../app/story/discreteSteps.mjs";
 
@@ -65,6 +64,16 @@ test("gesture listener lifecycle cannot cancel or stale the active animation", a
     content,
     /const start = visualProgressRef\.current;/,
     "A gesture handler retained across renders must not capture stale progress",
+  );
+  assert.doesNotMatch(
+    content,
+    /^  visualProgressRef\.current = visualProgress;$/m,
+    "React refs must not be updated during render",
+  );
+  assert.match(
+    content,
+    /useEffect\(\(\) => \{\s*visualProgressRef\.current = visualProgress;\s*\}, \[visualProgress\]\);/,
+    "External visual progress changes should synchronize the live ref in an effect",
   );
 
   const gestureEffectStart = content.indexOf("// Event handlers for gestures");

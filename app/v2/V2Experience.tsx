@@ -15,7 +15,6 @@ import { V2MobileShell } from "./components/V2MobileShell";
 import {
   STEPS,
   getClosestStepIndex,
-  getStepProgress,
   shouldProcessGesture,
 } from "../story/discreteSteps.mjs";
 import manifest from "./story-manifest.json";
@@ -66,7 +65,9 @@ export function V2Experience() {
     isAnimatingRef.current = isAnimating;
   }, [isAnimating]);
 
-  visualProgressRef.current = visualProgress;
+  useEffect(() => {
+    visualProgressRef.current = visualProgress;
+  }, [visualProgress]);
 
   useEffect(() => {
     return () => {
