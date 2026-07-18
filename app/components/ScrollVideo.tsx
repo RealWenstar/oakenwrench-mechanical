@@ -10,6 +10,8 @@ export function ScrollVideo({
   poster,
   progress,
   src,
+  onReady,
+  onBufferProgress,
 }: {
   mobileSrc: string;
   onError: () => void;
@@ -17,6 +19,8 @@ export function ScrollVideo({
   poster: string;
   progress: number;
   src: string;
+  onReady?: () => void;
+  onBufferProgress?: (progress: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetRef = useRef(0);
@@ -55,13 +59,27 @@ export function ScrollVideo({
     void video.play().then(() => {
       video.pause();
       seekToLatestTarget();
-    }).catch(seekToLatestTarget);
-  }, [seekToLatestTarget]);
+      onReady?.();
+    }).catch(() => {
+      seekToLatestTarget();
+      onReady?.();
+    });
+  }, [seekToLatestTarget, onReady]);
 
   const handleSeeked = useCallback(() => {
     clearStallTimer();
     seekToLatestTarget();
   }, [clearStallTimer, seekToLatestTarget]);
+
+  const handleProgress = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || video.buffered.length === 0) return;
+    const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+    const duration = video.duration;
+    if (duration > 0) {
+      onBufferProgress?.(bufferedEnd / duration);
+    }
+  }, [onBufferProgress]);
 
   return (
     <video
@@ -74,6 +92,7 @@ export function ScrollVideo({
       aria-hidden="true"
       onLoadedMetadata={handleLoadedMetadata}
       onSeeked={handleSeeked}
+      onProgress={handleProgress}
       onError={onError}
     >
       <source media="(max-width: 799px)" src={mobileSrc} type="video/mp4" />
@@ -81,3 +100,4 @@ export function ScrollVideo({
     </video>
   );
 }
+

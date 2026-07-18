@@ -67,6 +67,84 @@ a {
   pointer-events: none;
 }
 
+.v2-phone-stage .topbar {
+  position: absolute;
+}
+
+/* V2 Preloader and Transition States */
+.topbar[data-state="loading"],
+.topbar[data-state="ready"] {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  width: 100vw;
+  height: 100svh;
+  max-width: none;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 800ms ease;
+  left: 0;
+  transform: none;
+  pointer-events: auto;
+}
+
+.v2-phone-stage .topbar[data-state="loading"],
+.v2-phone-stage .topbar[data-state="ready"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.topbar[data-state="ready"] {
+  background: transparent;
+  pointer-events: none;
+}
+
+.topbar[data-state="loading"] .brand-beacon,
+.topbar[data-state="ready"] .brand-beacon {
+  width: clamp(10rem, 45vw, 14rem);
+  transform: none;
+  left: auto;
+  pointer-events: auto;
+  transition: transform 1000ms cubic-bezier(0.25, 1, 0.5, 1), width 1000ms ease;
+}
+
+.topbar[data-state="ready"] .brand-beacon {
+  transform: translateY(-24vh);
+}
+
+.preloader-bar-container {
+  width: min(200px, 60%);
+  height: 2px;
+  background: rgb(245 241 232 / 12%);
+  margin-top: 1.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.preloader-bar-fill {
+  height: 100%;
+  background: var(--amber-hot);
+  transition: width 150ms ease;
+}
+
+.tap-cue {
+  color: var(--amber-hot);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 1.5rem;
+  animation: cue-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+  position: absolute;
+  bottom: 22%;
+}
+
+
 .brand-beacon {
   position: relative;
   display: flex;

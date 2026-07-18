@@ -2,7 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function TopBar({ compact }: { compact: boolean }) {
+export function TopBar({
+  compact,
+  loadingState = "active",
+  onTapLogo,
+  bufferProgress = 0,
+}: {
+  compact: boolean;
+  loadingState?: "loading" | "ready" | "active";
+  onTapLogo?: () => void;
+  bufferProgress?: number;
+}) {
   const [scrolling, setScrolling] = useState(false);
   const idleTimer = useRef<number | null>(null);
 
@@ -31,11 +41,35 @@ export function TopBar({ compact }: { compact: boolean }) {
       className="topbar"
       data-compact={compact}
       data-scrolling={scrolling}
+      data-state={loadingState}
     >
+      {loadingState === "loading" && (
+        <div className="preloader-bar-container" aria-hidden="true">
+          <div
+            className="preloader-bar-fill"
+            style={{ width: `${Math.round(bufferProgress * 100)}%` }}
+          />
+        </div>
+      )}
+
+      {loadingState === "ready" && (
+        <div className="tap-cue" aria-hidden="true">
+          Tap logo to open
+        </div>
+      )}
+
       <a
         className="brand-beacon"
         href="#story"
         aria-label="Oakenwrench Mechanical — back to the garage"
+        onClick={(e) => {
+          if (loadingState === "ready" && onTapLogo) {
+            e.preventDefault();
+            onTapLogo();
+          } else if (loadingState === "loading") {
+            e.preventDefault();
+          }
+        }}
       >
         <img
           src="/media/brand/oakenwrench-mark.png"
