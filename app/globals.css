@@ -96,12 +96,18 @@ a {
   width: clamp(7rem, 29vw, 8.4rem);
   flex-direction: column;
   align-items: center;
+  opacity: 0;
   transform: translateX(-50%);
   transform-origin: 50% 50%;
   transition:
-    top 2400ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 2400ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 2400ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 700ms ease,
+    top 2760ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 2760ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 2760ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topbar[data-intro-visible="true"] .brand-intro-stack {
+  opacity: 1;
 }
 
 .topbar[data-state="loading"] .brand-intro-stack,
@@ -114,51 +120,6 @@ a {
 .topbar[data-state="ready"] .brand-beacon {
   pointer-events: auto;
 }
-
-.preloader-bar-container {
-  width: min(180px, 72%);
-  height: 2px;
-  background: rgb(245 241 232 / 12%);
-  margin-top: 1.5rem;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 300ms ease;
-}
-
-.topbar[data-state="loading"] .preloader-bar-container {
-  opacity: 1;
-}
-
-.topbar[data-state="ready"] .preloader-bar-container {
-  opacity: 0;
-}
-
-.preloader-bar-fill {
-  height: 100%;
-  background: var(--amber-hot);
-  transition: width 150ms ease;
-}
-
-.tap-cue {
-  color: var(--amber-hot);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 1.5rem;
-  pointer-events: none;
-  opacity: 0;
-  white-space: nowrap;
-  transition: opacity 220ms ease;
-}
-
-.topbar[data-state="ready"] .tap-cue {
-  opacity: 1;
-  animation: cue-pulse 1.8s ease-in-out infinite;
-}
-
-
 
 .brand-beacon {
   position: relative;
@@ -275,8 +236,9 @@ a {
 }
 
 .story-copy {
-  max-width: min(37rem, 92vw);
-  animation: copy-in 320ms ease both;
+  width: 100%;
+  max-width: 100%;
+  animation: copy-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .story-copy h1,
@@ -294,12 +256,13 @@ a {
 }
 
 .story-copy p {
-  max-width: 34rem;
+  max-width: 100%;
   margin: 1.15rem 0 0;
   color: var(--ink-muted);
   font-size: clamp(0.96rem, 3.7vw, 1.15rem);
   line-height: 1.55;
   text-shadow: 0 2px 18px rgb(0 0 0 / 52%);
+  overflow-wrap: anywhere;
 }
 
 .story-overlay[data-chapter="truck"] .story-copy h2,
@@ -429,7 +392,7 @@ a {
 }
 
 @keyframes copy-in {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(32px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -563,6 +526,21 @@ a {
   max-width: 430px;
   overflow: hidden;
   background: #08131f;
+}
+
+.v2-phone-stage .story-overlay {
+  padding-top: 6rem;
+  padding-right: 1.25rem;
+  padding-bottom: 7.75rem;
+  padding-left: 1.25rem;
+}
+
+.v2-phone-stage .story-copy h1,
+.v2-phone-stage .story-copy h2,
+.v2-phone-stage .story-overlay[data-chapter="truck"] .story-copy h2,
+.v2-phone-stage .story-overlay[data-chapter="equipment"] .story-copy h2 {
+  max-width: 100%;
+  font-size: clamp(2.75rem, 12vw, 3.6rem);
 }
 
 .v2-phone-stage .media-layer,
@@ -808,12 +786,12 @@ a {
 
   .v2-phone-stage .story-overlay {
     justify-content: flex-end;
-    padding: 6rem 1.6rem 8.8rem;
+    padding: 6rem 1.6rem 7.75rem;
   }
 
   .v2-phone-stage .story-copy h1,
   .v2-phone-stage .story-copy h2 {
-    font-size: 4.2rem;
+    font-size: 3.6rem;
   }
 }
 
@@ -821,7 +799,7 @@ a {
   .v2-phone-stage .story-overlay {
     padding-top: 5rem;
     padding-right: 1rem;
-    padding-bottom: calc(7.6rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(7.75rem + env(safe-area-inset-bottom));
     padding-left: 1rem;
   }
 

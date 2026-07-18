@@ -34,19 +34,14 @@ test("transition lock helper decides correctly", () => {
   assert.equal(shouldProcessGesture(false, 800, 1000, 150), true);
 });
 
-test("TopBar renders preloader bar below the brand logo", async () => {
+test("TopBar keeps only the brand logo in the intro", async () => {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
   const topbarPath = path.join(process.cwd(), "app", "components", "TopBar.tsx");
   const content = await fs.readFile(topbarPath, "utf8");
 
-  // Verify brand-beacon appears before preloader-bar-container in the source code
-  const logoIndex = content.indexOf("className=\"brand-beacon\"");
-  const preloaderIndex = content.indexOf("className=\"preloader-bar-container\"");
-
-  assert.ok(logoIndex !== -1, "Logo should be present");
-  assert.ok(preloaderIndex !== -1, "Preloader should be present");
-  assert.ok(logoIndex < preloaderIndex, "Logo must be rendered above the preloader line");
+  assert.match(content, /className="brand-beacon"/, "Logo should be present");
+  assert.doesNotMatch(content, /preloader-bar-container/, "Intro should not show a loading bar");
 });
 
 test("gesture listener lifecycle cannot cancel or stale the active animation", async () => {
@@ -94,16 +89,12 @@ test("gesture listener lifecycle cannot cancel or stale the active animation", a
   );
 });
 
-test("tap cue pulse is scoped to the ready state", async () => {
+test("ready screen has no instructional cue", async () => {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
   const cssPath = path.join(process.cwd(), "app", "globals.css");
   const content = await fs.readFile(cssPath, "utf8");
 
-  const baseRule = content.match(/\.tap-cue\s*\{([^}]*)\}/)?.[1] ?? "";
-  const readyRule = content.match(/\.topbar\[data-state="ready"\] \.tap-cue\s*\{([^}]*)\}/)?.[1] ?? "";
-
-  assert.doesNotMatch(baseRule, /animation:/, "Hidden cue must not keep a pulse animation active");
-  assert.match(baseRule, /pointer-events:\s*none/, "Cue must never intercept logo interaction");
-  assert.match(readyRule, /animation:\s*cue-pulse/, "Only the ready cue should pulse");
+  assert.doesNotMatch(content, /\.tap-cue\s*\{/);
+  assert.doesNotMatch(content, /\.topbar\[data-state="ready"\] \.tap-cue/);
 });

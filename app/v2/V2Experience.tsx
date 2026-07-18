@@ -30,7 +30,8 @@ type Variant = {
 const chapters = manifest.chapters as V2Chapter[];
 const variant = manifest.variants[0] as Variant;
 const lanes = manifest.lanes as ConstructionLane[];
-const INTRO_DURATION_MS = 2400;
+const INTRO_REVEAL_DELAY_MS = 500;
+const INTRO_DURATION_MS = 2760;
 const STEP_DURATION_MS = 1900;
 
 export function V2Experience() {
@@ -39,10 +40,10 @@ export function V2Experience() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [interfaceVisible, setInterfaceVisible] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [introVisible, setIntroVisible] = useState(false);
 
   // States for preloader and visual scroller
   const [loadingState, setLoadingState] = useState<"loading" | "ready" | "opening" | "active">("loading");
-  const [bufferProgress, setBufferProgress] = useState(0);
   const [progress, setProgress] = useState(0); // target step progress
   const [visualProgress, setVisualProgress] = useState(0); // smoothly interpolated progress
   const [isAnimating, setIsAnimating] = useState(false);
@@ -71,6 +72,11 @@ export function V2Experience() {
   useEffect(() => {
     visualProgressRef.current = visualProgress;
   }, [visualProgress]);
+
+  useEffect(() => {
+    const introTimer = window.setTimeout(() => setIntroVisible(true), INTRO_REVEAL_DELAY_MS);
+    return () => window.clearTimeout(introTimer);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -273,7 +279,6 @@ export function V2Experience() {
                     poster={manifest.poster}
                     progress={visualProgress}
                     onReady={() => setLoadingState((curr) => curr === "loading" ? "ready" : curr)}
-                    onBufferProgress={setBufferProgress}
                     onError={() => {
                       setVideoFailed(true);
                       setLoadingState((curr) => curr === "loading" ? "ready" : curr);
@@ -289,9 +294,9 @@ export function V2Experience() {
               
               <TopBar
                 compact={visualProgress > 0.08}
+                introVisible={introVisible}
                 loadingState={loadingState}
                 onTapLogo={handleTapLogo}
-                bufferProgress={bufferProgress}
               />
 
               <StoryOverlay

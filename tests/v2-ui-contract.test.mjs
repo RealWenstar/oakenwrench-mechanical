@@ -43,16 +43,32 @@ test("v2 exposes an explicit opt-in Sound control", async () => {
 test("v2 ready screen is logo-only and story copy waits for the completed opening", async () => {
   const experience = await source("app/v2/V2Experience.tsx");
   const topbar = await source("app/components/TopBar.tsx");
+  const css = await source("app/globals.css");
 
   assert.match(experience, /"loading" \| "ready" \| "opening" \| "active"/);
-  assert.match(experience, /const INTRO_DURATION_MS = 2400/);
+  assert.match(experience, /const INTRO_REVEAL_DELAY_MS = 500/);
+  assert.match(experience, /const INTRO_DURATION_MS = 2760/);
   assert.match(experience, /const STEP_DURATION_MS = 1900/);
+  assert.match(experience, /introVisible/);
   assert.match(experience, /setLoadingState\("opening"\)/);
   assert.match(experience, /animateTo\(0\.18, INTRO_DURATION_MS, \(\) => setLoadingState\("active"\)\)/);
   assert.match(experience, /visible=\{loadingState === "active"\}/);
   assert.match(experience, /loadingState === "active" && interfaceVisible/);
-  assert.match(topbar, /Tap logo to open/);
+  assert.doesNotMatch(topbar, /Tap logo to open/i);
+  assert.doesNotMatch(topbar, /tap-cue/);
+  assert.doesNotMatch(topbar, /preloader-bar/);
+  assert.match(topbar, /data-intro-visible=\{introVisible\}/);
+  assert.match(css, /\.brand-intro-stack[\s\S]*opacity:\s*0/);
+  assert.match(css, /data-intro-visible="true"[\s\S]*opacity:\s*1/);
   assert.doesNotMatch(topbar, /Motion lab/i);
+});
+
+test("v2 first story copy enters from below and stays inside the phone frame", async () => {
+  const css = await source("app/globals.css");
+  assert.match(css, /@keyframes copy-in[\s\S]*translateY\(32px\)/);
+  assert.match(css, /\.story-copy[\s\S]*animation:\s*copy-in 620ms/);
+  assert.match(css, /\.v2-phone-stage \.story-copy h1,[\s\S]*font-size:\s*clamp\(2\.75rem, 12vw, 3\.6rem\)/);
+  assert.match(css, /\.v2-phone-stage \.story-overlay[\s\S]*padding-bottom:\s*7\.75rem/);
 });
 
 test("v2 control center is the only persistent chrome and can hide the interface", async () => {

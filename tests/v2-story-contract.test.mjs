@@ -33,7 +33,7 @@ test("v2 manifest points only at the latest user-edited cut without replacing v1
   assert.deepEqual(
     manifest.variants.map(({ video }) => video),
     [
-      "/media/v2/oakenwrench-v2-latest-scrub.mp4",
+      "/media/v2/oakenwrench-v2-latest-intraframe.mp4",
     ],
   );
 });

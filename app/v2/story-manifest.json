@@ -17,7 +17,7 @@
     {
       "id": "latest",
       "label": "Latest cut",
-      "video": "/media/v2/oakenwrench-v2-latest-scrub.mp4",
+      "video": "/media/v2/oakenwrench-v2-latest-intraframe.mp4",
       "durationSeconds": 50.538667,
       "scrollVh": 1120
     }
