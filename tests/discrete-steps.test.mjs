@@ -50,3 +50,37 @@ test("TopBar renders preloader bar below the brand logo", async () => {
   assert.ok(logoIndex < preloaderIndex, "Logo must be rendered above the preloader line");
 });
 
+test("gesture listener lifecycle cannot cancel or stale the active animation", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const experiencePath = path.join(process.cwd(), "app", "v2", "V2Experience.tsx");
+  const content = await fs.readFile(experiencePath, "utf8");
+
+  assert.match(
+    content,
+    /const visualProgressRef = useRef\(0\);/,
+    "Animations must read their start value from a live progress ref",
+  );
+  assert.match(
+    content,
+    /const start = visualProgressRef\.current;/,
+    "A gesture handler retained across renders must not capture stale progress",
+  );
+
+  const gestureEffectStart = content.indexOf("// Event handlers for gestures");
+  const keyboardEffectStart = content.indexOf("// Handle keyboard navigation");
+  const gestureEffect = content.slice(gestureEffectStart, keyboardEffectStart);
+
+  assert.ok(gestureEffectStart !== -1, "Gesture effect should be present");
+  assert.ok(keyboardEffectStart > gestureEffectStart, "Keyboard effect should follow gesture effect");
+  assert.doesNotMatch(
+    gestureEffect,
+    /cancelAnimationFrame/,
+    "Rebinding gesture listeners must never cancel the active RAF",
+  );
+  assert.match(
+    gestureEffect,
+    /\}, \[loadingState\]\);/,
+    "Gesture listeners should not rebind for every visual progress frame",
+  );
+});

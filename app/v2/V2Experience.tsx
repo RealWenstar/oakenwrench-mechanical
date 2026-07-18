@@ -51,6 +51,7 @@ export function V2Experience() {
   const active = getTimelineWindow(visualProgress, chapters);
 
   const progressRef = useRef(0);
+  const visualProgressRef = useRef(0);
   const isAnimatingRef = useRef(false);
   const lastGestureTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -65,16 +66,27 @@ export function V2Experience() {
     isAnimatingRef.current = isAnimating;
   }, [isAnimating]);
 
+  visualProgressRef.current = visualProgress;
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   const animateTo = (target: number, duration: number, callback?: () => void) => {
     if (animationFrameRef.current !== null) {
       window.cancelAnimationFrame(animationFrameRef.current);
     }
     setIsAnimating(true);
-    const start = visualProgress;
+    const start = visualProgressRef.current;
     const startTime = performance.now();
 
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isReduced || duration <= 0) {
+      visualProgressRef.current = target;
       setVisualProgress(target);
       setProgress(target);
       setIsAnimating(false);
@@ -89,11 +101,13 @@ export function V2Experience() {
       const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
       const nextVal = start + (target - start) * ease;
 
+      visualProgressRef.current = nextVal;
       setVisualProgress(nextVal);
 
       if (t < 1) {
         animationFrameRef.current = window.requestAnimationFrame(tick);
       } else {
+        visualProgressRef.current = target;
         setVisualProgress(target);
         setProgress(target);
         setIsAnimating(false);
@@ -201,11 +215,8 @@ export function V2Experience() {
       stage.removeEventListener("touchstart", handleTouchStart);
       stage.removeEventListener("touchmove", handleTouchMove);
       stage.removeEventListener("touchend", handleTouchEnd);
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-      }
     };
-  }, [loadingState, visualProgress]);
+  }, [loadingState]);
 
   // Handle keyboard navigation for accessibility
   useEffect(() => {
@@ -298,4 +309,3 @@ export function V2Experience() {
     </main>
   );
 }
-
