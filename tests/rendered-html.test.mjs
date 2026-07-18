@@ -19,18 +19,18 @@ test("server-renders the complete Oakenwrench v2 construction shell", async () =
   const html = await response.text();
 
   assert.match(html, /<title>Oakenwrench Mechanical \| Calgary Repairs<\/title>/i);
+  assert.match(html, /viewport-fit=cover/i);
   assert.match(html, /Oakenwrench Mechanical/);
-  assert.match(html, /Heavy-duty\. Small engines\. Real work\./);
+  assert.doesNotMatch(html, /Heavy-duty\. Small engines\. Real work\./);
   assert.match(html, /id="story"/);
   assert.equal((html.match(/class="v2-sticky-stage"/g) ?? []).length, 1);
   assert.doesNotMatch(html, /class="story-chapter"/);
   assert.match(html, /src="\/media\/brand\/oakenwrench-mark\.png"/);
-  assert.match(html, /Motion lab · v2/);
+  assert.doesNotMatch(html, /Motion lab · v2/);
   assert.match(html, /oakenwrench-v2-latest-poster\.webp/);
   assert.doesNotMatch(html, />Raw<|>Clean</);
-  assert.match(html, /Sound off/);
-  assert.match(html, /Timeline/);
+  assert.doesNotMatch(html, /Open control center/);
   assert.doesNotMatch(html, /Call Dave|call-pill/);
-  assert.equal((html.match(/<h1\b/gi) ?? []).length, 1);
+  assert.equal((html.match(/<h1\b/gi) ?? []).length, 0);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/);
 });

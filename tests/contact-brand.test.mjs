@@ -18,15 +18,17 @@ test("publishes Dave's direct Facebook, Messenger, and WhatsApp contact links", 
   );
 });
 
-test("uses a centered transparent Oakenwrench scroll beacon without a call pill", async () => {
-  const source = await readFile(
-    new URL("app/components/TopBar.tsx", projectRoot),
-    "utf8",
-  );
+test("uses a centered Oakenwrench beacon driven by discrete animation state", async () => {
+  const [source, experience, css] = await Promise.all([
+    readFile(new URL("app/components/TopBar.tsx", projectRoot), "utf8"),
+    readFile(new URL("app/v2/V2Experience.tsx", projectRoot), "utf8"),
+    readFile(new URL("app/globals.css", projectRoot), "utf8"),
+  ]);
 
   assert.match(source, /\/media\/brand\/oakenwrench-mark\.png/);
-  assert.match(source, /data-scrolling/);
-  assert.match(source, /passive: true/);
+  assert.doesNotMatch(source, /data-scrolling/);
+  assert.match(experience, /data-animating=\{isAnimating\}/);
+  assert.match(css, /data-animating="true"/);
   assert.doesNotMatch(source, /Call Dave|call-pill/);
 });
 

@@ -8,10 +8,13 @@ import type { StoryChapterId } from "../story/story";
 export function StoryOverlay({
   chapterId,
   progress,
+  visible = true,
 }: {
   chapterId: StoryChapterId;
   progress: number;
+  visible?: boolean;
 }) {
+  if (!visible) return null;
   const copy = storyCopy[chapterId];
   const { fromIndex, toIndex, t } = getBeatWindow(progress, copy);
   const visibleIndex = t > 0.5 ? toIndex : fromIndex;

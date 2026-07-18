@@ -8,7 +8,7 @@ import { getTimelineWindow } from "../story/progress.mjs";
 import type { StoryChapterId } from "../story/story";
 import { useStoryProgress } from "../story/useStoryProgress";
 import { ConstructionTimeline, type ConstructionLane } from "./components/ConstructionTimeline";
-import { SoundControl } from "./components/SoundControl";
+import { ControlCenter } from "./components/ControlCenter";
 import { StorySoundscape } from "./components/StorySoundscape";
 import { V2ChapterNav, type V2Chapter } from "./components/V2ChapterNav";
 import { V2MobileShell } from "./components/V2MobileShell";
@@ -30,15 +30,18 @@ type Variant = {
 const chapters = manifest.chapters as V2Chapter[];
 const variant = manifest.variants[0] as Variant;
 const lanes = manifest.lanes as ConstructionLane[];
+const INTRO_DURATION_MS = 2400;
+const STEP_DURATION_MS = 1900;
 
 export function V2Experience() {
   const storyRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [interfaceVisible, setInterfaceVisible] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
 
   // States for preloader and visual scroller
-  const [loadingState, setLoadingState] = useState<"loading" | "ready" | "active">("loading");
+  const [loadingState, setLoadingState] = useState<"loading" | "ready" | "opening" | "active">("loading");
   const [bufferProgress, setBufferProgress] = useState(0);
   const [progress, setProgress] = useState(0); // target step progress
   const [visualProgress, setVisualProgress] = useState(0); // smoothly interpolated progress
@@ -121,9 +124,8 @@ export function V2Experience() {
 
   const handleTapLogo = () => {
     if (loadingState !== "ready") return;
-    setLoadingState("active");
-    // Animate from 0 to 18% (garage doors open)
-    animateTo(0.18, 1600);
+    setLoadingState("opening");
+    animateTo(0.18, INTRO_DURATION_MS, () => setLoadingState("active"));
   };
 
   const jumpTo = (chapter: V2Chapter) => {
@@ -134,7 +136,7 @@ export function V2Experience() {
     else if (chapter.id === "equipment") target = 0.55;
     else if (chapter.id === "contact") target = 0.77;
 
-    animateTo(target, 800);
+    animateTo(target, STEP_DURATION_MS);
   };
 
   // Event handlers for gestures (touch & wheel)
@@ -157,13 +159,13 @@ export function V2Experience() {
         if (currentIdx < STEPS.length - 1) {
           lastGestureTimeRef.current = performance.now();
           const target = STEPS[currentIdx + 1];
-          animateTo(target, 800);
+          animateTo(target, STEP_DURATION_MS);
         }
       } else {
         if (currentIdx > 0) {
           lastGestureTimeRef.current = performance.now();
           const target = STEPS[currentIdx - 1];
-          animateTo(target, 800);
+          animateTo(target, STEP_DURATION_MS);
         }
       }
     };
@@ -194,13 +196,13 @@ export function V2Experience() {
         if (currentIdx < STEPS.length - 1) {
           lastGestureTimeRef.current = performance.now();
           const target = STEPS[currentIdx + 1];
-          animateTo(target, 800);
+          animateTo(target, STEP_DURATION_MS);
         }
       } else {
         if (currentIdx > 0) {
           lastGestureTimeRef.current = performance.now();
           const target = STEPS[currentIdx - 1];
-          animateTo(target, 800);
+          animateTo(target, STEP_DURATION_MS);
         }
       }
     };
@@ -230,12 +232,12 @@ export function V2Experience() {
       if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
         if (currentIdx < STEPS.length - 1) {
-          animateTo(STEPS[currentIdx + 1], 800);
+          animateTo(STEPS[currentIdx + 1], STEP_DURATION_MS);
         }
       } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
         if (currentIdx > 0) {
-          animateTo(STEPS[currentIdx - 1], 800);
+          animateTo(STEPS[currentIdx - 1], STEP_DURATION_MS);
         }
       }
     };
@@ -252,9 +254,14 @@ export function V2Experience() {
         ref={storyRef}
         id="story"
         className="v2-story-timeline"
-        style={{ height: `${variant.scrollVh}svh` }}
+        style={{ height: `${variant.scrollVh}dvh` }}
       >
-        <div className="v2-sticky-stage" data-progress={visualProgress.toFixed(4)} data-chapter={active.id}>
+        <div
+          className="v2-sticky-stage"
+          data-progress={visualProgress.toFixed(4)}
+          data-chapter={active.id}
+          data-animating={isAnimating}
+        >
           <V2MobileShell>
             <div ref={stageRef} className="v2-phone-stage" style={{ touchAction: "none" }}>
               <div className="media-stage" aria-hidden="true" data-fallback={videoFailed}>
@@ -290,13 +297,23 @@ export function V2Experience() {
               <StoryOverlay
                 chapterId={active.id as StoryChapterId}
                 progress={active.localProgress}
+                visible={loadingState === "active"}
               />
-              <div className="v2-controls">
-                <span className="v2-lab-label">Motion lab · v2</span>
-                <SoundControl defaultEnabled={false} onChange={setSoundEnabled} />
-              </div>
-              <ConstructionTimeline lanes={lanes} progress={visualProgress} />
-              <V2ChapterNav activeId={active.id} chapters={chapters} onSelect={jumpTo} />
+              {loadingState === "active" ? (
+                <ControlCenter
+                  defaultSoundEnabled={false}
+                  soundEnabled={soundEnabled}
+                  onSoundChange={setSoundEnabled}
+                  interfaceVisible={interfaceVisible}
+                  onInterfaceChange={setInterfaceVisible}
+                />
+              ) : null}
+              {loadingState === "active" && interfaceVisible ? (
+                <div className="v2-interface-chrome">
+                  <ConstructionTimeline lanes={lanes} progress={visualProgress} />
+                  <V2ChapterNav activeId={active.id} chapters={chapters} onSelect={jumpTo} />
+                </div>
+              ) : null}
             </div>
           </V2MobileShell>
         </div>
