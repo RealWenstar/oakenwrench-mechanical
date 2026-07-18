@@ -66,6 +66,11 @@ test("v2 control center is the only persistent chrome and can hide the interface
   assert.match(controls, /Hide interface/);
   assert.match(controls, /Show interface/);
   assert.match(controls, /aria-label="Interface"/);
+  assert.match(
+    controls,
+    /const toggleInterface = \(\) => \{[\s\S]*setOpen\(false\);[\s\S]*\};/,
+    "Changing interface visibility must close the panel and leave only the restore trigger",
+  );
 });
 
 test("v2 mobile CSS uses dynamic viewport sizing and safe-area bounds", async () => {

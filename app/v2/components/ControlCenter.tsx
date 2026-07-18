@@ -44,6 +44,7 @@ export function ControlCenter({
     const next = !interfaceVisible;
     onInterfaceChange(next);
     window.localStorage.setItem(INTERFACE_KEY, String(next));
+    setOpen(false);
   };
 
   return (
