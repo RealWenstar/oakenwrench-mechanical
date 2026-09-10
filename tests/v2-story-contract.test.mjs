@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const manifestUrl = new URL("../app/v2/story-manifest.json", import.meta.url);
@@ -33,26 +33,19 @@ test("v2 manifest points only at the latest user-edited cut without replacing v1
   assert.deepEqual(
     manifest.variants.map(({ video }) => video),
     [
-      "/media/v2/oakenwrench-v2-latest-intraframe.mp4",
+      "/media/v2/oakenwrench-v2-mobile-608-intraframe.mp4",
     ],
   );
 });
 
-test("v2 sound contract uses the matching latest-cut audio", async () => {
-  const manifest = await readManifest();
-  assert.ok(manifest, "expected v2 manifest to exist");
-  assert.equal(manifest.sound.defaultEnabled, false);
-  assert.equal(manifest.sound.scrubTrack, "/media/v2/audio/oakenwrench-v2-latest.m4a");
-  await access(new URL(`../public${manifest.sound.scrubTrack}`, import.meta.url));
-});
-
-test("v2 timeline has independent visual, audio, ui, and qa lanes", async () => {
+test("v2 timeline has independent visual, ui, and qa lanes without audio", async () => {
   const manifest = await readManifest();
   assert.ok(manifest, "expected v2 manifest to exist");
   assert.deepEqual(
     manifest.lanes.map(({ id }) => id),
-    ["visual", "audio", "ui", "qa"],
+    ["visual", "ui", "qa"],
   );
+  assert.equal("sound" in manifest, false);
 
   for (const lane of manifest.lanes) {
     assert.ok(lane.cues.length > 0, `${lane.id} lane must contain cues`);
@@ -85,7 +78,7 @@ test("v2 contract resolves variants, lanes, and chapters", async () => {
   assert.ok(helpers, "expected app/v2/story-contract.mjs to exist");
   assert.equal(helpers.getStoryVariant(manifest, "latest").label, "Latest cut");
   assert.equal(helpers.getStoryVariant(manifest, "missing").id, "latest");
-  assert.equal(helpers.getTimelineLane(manifest, "audio").id, "audio");
+  assert.equal(helpers.getTimelineLane(manifest, "audio"), undefined);
   assert.equal(helpers.getChapterAtProgress(manifest, 0).id, "garage");
   assert.equal(helpers.getChapterAtProgress(manifest, 1).id, "contact");
 });

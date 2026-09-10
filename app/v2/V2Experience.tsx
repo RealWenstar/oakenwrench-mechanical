@@ -1,23 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollVideo } from "../components/ScrollVideo";
 import { StoryOverlay } from "../components/StoryOverlay";
 import { TopBar } from "../components/TopBar";
 import { getTimelineWindow } from "../story/progress.mjs";
-import type { StoryChapterId } from "../story/story";
-import { useStoryProgress } from "../story/useStoryProgress";
-import { ConstructionTimeline, type ConstructionLane } from "./components/ConstructionTimeline";
-import { ControlCenter } from "./components/ControlCenter";
-import { StorySoundscape } from "./components/StorySoundscape";
-import { V2ChapterNav, type V2Chapter } from "./components/V2ChapterNav";
-import { V2MobileShell } from "./components/V2MobileShell";
+import { STORY_KEY_STOPS } from "../story/keyStops.mjs";
+import { canEnterStory } from "../story/loading.mjs";
+import { swipeEase, swipeDuration } from "../story/swipeMotion.mjs";
 import {
   STEPS,
   getClosestStepIndex,
   shouldProcessGesture,
 } from "../story/discreteSteps.mjs";
+import { ExperienceTools, type PerformanceMode } from "./components/ExperienceTools";
+import { LiteStepControls } from "./components/LiteStepControls";
+import { V2LoadMeter } from "./components/V2LoadMeter";
+import { PersistentCallButton } from "./components/PersistentCallButton";
+import { type V2Chapter } from "./components/V2ChapterNav";
+import { V2MobileShell } from "./components/V2MobileShell";
+import { V2StopNav, type V2Stop } from "./components/V2StopNav";
 import manifest from "./story-manifest.json";
+
+export type IntroState = "black" | "ready" | "holding" | "opening" | "truck_exit" | "active";
 
 type Variant = {
   id: "latest";
@@ -29,191 +34,276 @@ type Variant = {
 
 const chapters = manifest.chapters as V2Chapter[];
 const variant = manifest.variants[0] as Variant;
-const lanes = manifest.lanes as ConstructionLane[];
-const INTRO_REVEAL_DELAY_MS = 500;
+const storyStops = STORY_KEY_STOPS as V2Stop[];
+const MAX_LOADING_MS = 12000;
+const PASSIVE_HOLD_MS = 200;
 const INTRO_DURATION_MS = 2760;
-const STEP_DURATION_MS = 1900;
+const STEP_DURATION_MS = 2200;
+const SWIPE_THRESHOLD_PX = 28;
 
 export function V2Experience() {
   const storyRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [interfaceVisible, setInterfaceVisible] = useState(true);
+  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>("full");
   const [videoFailed, setVideoFailed] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [bufferProgress, setBufferProgress] = useState(0);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const tempoRef = useRef(1);
+  const reducedMotionRef = useRef(false);
+  const exitTimerRef = useRef<number | null>(null);
 
-  // States for preloader and visual scroller
-  const [loadingState, setLoadingState] = useState<"loading" | "ready" | "opening" | "active">("loading");
-  const [progress, setProgress] = useState(0); // target step progress
-  const [visualProgress, setVisualProgress] = useState(0); // smoothly interpolated progress
+  const [loadingState, setLoadingState] = useState<IntroState>("black");
+  const [visualProgress, setVisualProgress] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  // Keep useStoryProgress to pass integration test constraints
-  const _unusedProgress = useStoryProgress(storyRef);
-
-  const active = getTimelineWindow(visualProgress, chapters);
-
-  const progressRef = useRef(0);
   const visualProgressRef = useRef(0);
   const isAnimatingRef = useRef(false);
-  const lastGestureTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
+  const lastGestureTimeRef = useRef(0);
+  const touchStartXRef = useRef(0);
   const touchStartYRef = useRef(0);
+  const hasTappedRef = useRef(false);
 
-  // Set up synchronization ref
-  useEffect(() => {
-    progressRef.current = progress;
-  }, [progress]);
+  const active = getTimelineWindow(visualProgress, chapters);
+  const currentStepIndex = getClosestStepIndex(visualProgress);
+  const activeStopIndex = Math.max(0, currentStepIndex - 1);
 
   useEffect(() => {
-    isAnimatingRef.current = isAnimating;
-  }, [isAnimating]);
+    const tempo = new URLSearchParams(window.location.search).get("tempo");
+    tempoRef.current = tempo === "fast" ? 0.8 : tempo === "slow" ? 1.2 : 1;
+    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotionRef.current) setPerformanceMode("lite");
+    const maximumTimer = window.setTimeout(() => setLoadingTimedOut(true), MAX_LOADING_MS);
+    return () => {
+      window.clearTimeout(maximumTimer);
+      if (exitTimerRef.current !== null) window.clearTimeout(exitTimerRef.current);
+    };
+  }, []);
+
+  // State 1: "black" -> State 2: "ready" when playable readiness is met
+  useEffect(() => {
+    if (loadingState !== "black") return;
+    if (
+      !canEnterStory({
+        mediaFailed: videoFailed,
+        mediaReady,
+        timedOut: loadingTimedOut,
+      })
+    )
+      return;
+    const revealFrame = window.requestAnimationFrame(() => {
+    if (videoFailed || (loadingTimedOut && !mediaReady)) {
+      setVideoFailed(true);
+      setPerformanceMode("lite");
+      visualProgressRef.current = 1;
+      setVisualProgress(1);
+      setLoadingState("active");
+      setIntroVisible(true);
+      return;
+    }
+    if (reducedMotionRef.current) {
+      visualProgressRef.current = STEPS[1];
+      setVisualProgress(STEPS[1]);
+      setLoadingState("active");
+      setIntroVisible(true);
+      return;
+    }
+    setLoadingState("ready");
+    setIntroVisible(true);
+    });
+    return () => window.cancelAnimationFrame(revealFrame);
+  }, [bufferProgress, loadingState, loadingTimedOut, mediaReady, videoFailed]);
+
+  // State 2: "ready" -> State 3: "holding" (passive 2-second hold)
+  useEffect(() => {
+    if (loadingState !== "ready") return;
+    const frame = window.requestAnimationFrame(() => setLoadingState("holding"));
+    return () => window.cancelAnimationFrame(frame);
+  }, [loadingState]);
 
   useEffect(() => {
     visualProgressRef.current = visualProgress;
   }, [visualProgress]);
 
   useEffect(() => {
-    const introTimer = window.setTimeout(() => setIntroVisible(true), INTRO_REVEAL_DELAY_MS);
-    return () => window.clearTimeout(introTimer);
-  }, []);
+    isAnimatingRef.current = isAnimating;
+  }, [isAnimating]);
 
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
-
-  const animateTo = (target: number, duration: number, callback?: () => void) => {
+  useEffect(() => () => {
     if (animationFrameRef.current !== null) {
       window.cancelAnimationFrame(animationFrameRef.current);
     }
-    setIsAnimating(true);
-    const start = visualProgressRef.current;
-    const startTime = performance.now();
+  }, []);
 
-    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (isReduced || duration <= 0) {
-      visualProgressRef.current = target;
-      setVisualProgress(target);
-      setProgress(target);
-      setIsAnimating(false);
-      callback?.();
-      return;
+  useEffect(() => {
+    if (loadingState !== "opening" && loadingState !== "truck_exit" && loadingState !== "active") return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [loadingState]);
+
+  const animateTo = useCallback((target: number, duration = STEP_DURATION_MS, onComplete?: () => void) => {
+    if (animationFrameRef.current !== null) {
+      window.cancelAnimationFrame(animationFrameRef.current);
     }
 
-    const tick = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / duration);
-      // Ease-in-out quad
-      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      const nextVal = start + (target - start) * ease;
+    const start = visualProgressRef.current;
+    duration = duration === STEP_DURATION_MS
+      ? swipeDuration(start, target, tempoRef.current)
+      : duration * tempoRef.current;
+    if (duration <= 0) {
+      visualProgressRef.current = target;
+      setVisualProgress(target);
+      isAnimatingRef.current = false;
+      setIsAnimating(false);
+      animationFrameRef.current = null;
+      onComplete?.();
+      return;
+    }
+    if (Math.abs(target - start) < 0.0001) {
+      isAnimatingRef.current = false;
+      setIsAnimating(false);
+      animationFrameRef.current = null;
+      onComplete?.();
+      return;
+    }
+    const startedAt = performance.now();
+    isAnimatingRef.current = true;
+    setIsAnimating(true);
 
-      visualProgressRef.current = nextVal;
-      setVisualProgress(nextVal);
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / duration);
+      const eased = swipeEase(t);
+      const next = start + (target - start) * eased;
+      visualProgressRef.current = next;
+      setVisualProgress(next);
 
       if (t < 1) {
         animationFrameRef.current = window.requestAnimationFrame(tick);
       } else {
         visualProgressRef.current = target;
         setVisualProgress(target);
-        setProgress(target);
+        isAnimatingRef.current = false;
         setIsAnimating(false);
-        callback?.();
+        animationFrameRef.current = null;
+        onComplete?.();
       }
     };
 
     animationFrameRef.current = window.requestAnimationFrame(tick);
-  };
+  }, []);
+
+  const triggerOpening = useCallback(() => {
+    setLoadingState("opening");
+    setIntroVisible(true);
+    animateTo(0.17, INTRO_DURATION_MS, () => {
+      setLoadingState("truck_exit");
+      exitTimerRef.current = window.setTimeout(() => setLoadingState("active"), 300);
+    });
+  }, [animateTo]);
+
+  useEffect(() => {
+    if (loadingState !== "holding") return;
+    const holdTimer = window.setTimeout(() => {
+      if (hasTappedRef.current) return;
+      hasTappedRef.current = true;
+      triggerOpening();
+    }, PASSIVE_HOLD_MS);
+    return () => window.clearTimeout(holdTimer);
+  }, [loadingState, triggerOpening]);
 
   const handleTapLogo = () => {
-    if (loadingState !== "ready") return;
-    setLoadingState("opening");
-    animateTo(0.18, INTRO_DURATION_MS, () => setLoadingState("active"));
+    if (loadingState !== "ready" && loadingState !== "holding") return;
+    if (hasTappedRef.current) return;
+    hasTappedRef.current = true;
+    triggerOpening();
   };
 
-  const jumpTo = (chapter: V2Chapter) => {
-    if (loadingState !== "active" || isAnimating) return;
-    let target = 0;
-    if (chapter.id === "garage") target = 0;
-    else if (chapter.id === "truck") target = 0.18;
-    else if (chapter.id === "equipment") target = 0.55;
-    else if (chapter.id === "contact") target = 0.77;
-
-    animateTo(target, STEP_DURATION_MS);
+  const jumpToStop = (stop: V2Stop) => {
+    if (loadingState !== "active") return;
+    animateTo(stop.at, performanceMode === "lite" ? 0 : STEP_DURATION_MS);
   };
 
-  // Event handlers for gestures (touch & wheel)
+  const stepToIndex = (index: number) => {
+    const minIndex = loadingState === "active" ? 1 : 0;
+    const nextIndex = Math.max(minIndex, Math.min(STEPS.length - 1, index));
+    animateTo(STEPS[nextIndex], performanceMode === "lite" ? 0 : STEP_DURATION_MS);
+  };
+
+  const changePerformanceMode = (mode: PerformanceMode) => {
+    setPerformanceMode(mode);
+    if (mode === "lite") {
+      const closestIndex = getClosestStepIndex(visualProgressRef.current);
+      animateTo(STEPS[closestIndex], 0);
+    }
+  };
+
+  const handleVideoError = () => {
+    if (animationFrameRef.current !== null) window.cancelAnimationFrame(animationFrameRef.current);
+    if (exitTimerRef.current !== null) window.clearTimeout(exitTimerRef.current);
+    hasTappedRef.current = true;
+    setVideoFailed(true);
+    setPerformanceMode("lite");
+    animateTo(1, 0);
+    setIntroVisible(true);
+    setLoadingState("active");
+  };
+
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage) return;
+    if (!stage || loadingState !== "active") return;
 
-    const handleWheel = (e: WheelEvent) => {
-      if (loadingState !== "active") return;
-      e.preventDefault();
+    const isInteractiveTarget = (target: EventTarget | null) =>
+      target instanceof Element && Boolean(target.closest('a, button, [role="button"], input, select, textarea'));
 
-      if (!shouldProcessGesture(isAnimatingRef.current, lastGestureTimeRef.current, performance.now(), 200)) {
-        return;
-      }
-
-      if (Math.abs(e.deltaY) < 12) return;
-
-      const currentIdx = getClosestStepIndex(progressRef.current);
-      if (e.deltaY > 0) {
-        if (currentIdx < STEPS.length - 1) {
-          lastGestureTimeRef.current = performance.now();
-          const target = STEPS[currentIdx + 1];
-          animateTo(target, STEP_DURATION_MS);
-        }
-      } else {
-        if (currentIdx > 0) {
-          lastGestureTimeRef.current = performance.now();
-          const target = STEPS[currentIdx - 1];
-          animateTo(target, STEP_DURATION_MS);
-        }
-      }
+    const step = (direction: 1 | -1) => {
+      const now = performance.now();
+      if (!shouldProcessGesture(isAnimatingRef.current, lastGestureTimeRef.current, now)) return;
+      const currentIndex = getClosestStepIndex(visualProgressRef.current);
+      const minIndex = loadingState === "active" ? 1 : 0;
+      const nextIndex = Math.max(minIndex, Math.min(STEPS.length - 1, currentIndex + direction));
+      if (nextIndex === currentIndex) return;
+      lastGestureTimeRef.current = now;
+      animateTo(STEPS[nextIndex], performanceMode === "lite" ? 0 : STEP_DURATION_MS);
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (loadingState !== "active") return;
-      touchStartYRef.current = e.touches[0].clientY;
+    const handleWheel = (event: WheelEvent) => {
+      if (isInteractiveTarget(event.target)) return;
+      event.preventDefault();
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      if (Math.abs(delta) < 12) return;
+      step(delta > 0 ? 1 : -1);
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (loadingState !== "active") return;
-      // Prevent native iOS scroll bounce
-      e.preventDefault();
+    const handleTouchStart = (event: TouchEvent) => {
+      if (isInteractiveTarget(event.target)) return;
+      touchStartXRef.current = event.touches[0]?.clientX ?? 0;
+      touchStartYRef.current = event.touches[0]?.clientY ?? 0;
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (loadingState !== "active") return;
-
-      if (!shouldProcessGesture(isAnimatingRef.current, lastGestureTimeRef.current, performance.now(), 200)) {
-        return;
-      }
-
-      const deltaY = touchStartYRef.current - e.changedTouches[0].clientY;
-      if (Math.abs(deltaY) < 25) return;
-
-      const currentIdx = getClosestStepIndex(progressRef.current);
-      if (deltaY > 0) {
-        if (currentIdx < STEPS.length - 1) {
-          lastGestureTimeRef.current = performance.now();
-          const target = STEPS[currentIdx + 1];
-          animateTo(target, STEP_DURATION_MS);
-        }
-      } else {
-        if (currentIdx > 0) {
-          lastGestureTimeRef.current = performance.now();
-          const target = STEPS[currentIdx - 1];
-          animateTo(target, STEP_DURATION_MS);
-        }
-      }
+    const handleTouchMove = (event: TouchEvent) => {
+      if (isInteractiveTarget(event.target)) return;
+      event.preventDefault();
     };
 
-    // Add passive: false to allow preventDefault()
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (isInteractiveTarget(event.target)) return;
+      const endX = event.changedTouches[0]?.clientX ?? touchStartXRef.current;
+      const endY = event.changedTouches[0]?.clientY ?? touchStartYRef.current;
+      const deltaX = touchStartXRef.current - endX;
+      const deltaY = touchStartYRef.current - endY;
+
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+      if (Math.max(absX, absY) < SWIPE_THRESHOLD_PX) return;
+
+      const forward = absX > absY ? deltaX > 0 : deltaY > 0;
+      step(forward ? 1 : -1);
+    };
+
     stage.addEventListener("wheel", handleWheel, { passive: false });
     stage.addEventListener("touchstart", handleTouchStart, { passive: true });
     stage.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -225,35 +315,26 @@ export function V2Experience() {
       stage.removeEventListener("touchmove", handleTouchMove);
       stage.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [loadingState]);
+  }, [loadingState, performanceMode, animateTo]);
 
-  // Handle keyboard navigation for accessibility
   useEffect(() => {
     if (loadingState !== "active") return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (isAnimatingRef.current) return;
-      const currentIdx = getClosestStepIndex(progressRef.current);
-
-      if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === " ") {
-        e.preventDefault();
-        if (currentIdx < STEPS.length - 1) {
-          animateTo(STEPS[currentIdx + 1], STEP_DURATION_MS);
-        }
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-        e.preventDefault();
-        if (currentIdx > 0) {
-          animateTo(STEPS[currentIdx - 1], STEP_DURATION_MS);
-        }
-      }
+      const currentIndex = getClosestStepIndex(visualProgressRef.current);
+      const forward = event.key === "ArrowDown" || event.key === "ArrowRight" || event.key === " ";
+      const backward = event.key === "ArrowUp" || event.key === "ArrowLeft";
+      if (!forward && !backward) return;
+      event.preventDefault();
+      const nextIndex = Math.max(1, Math.min(STEPS.length - 1, currentIndex + (forward ? 1 : -1)));
+      animateTo(STEPS[nextIndex], performanceMode === "lite" ? 0 : STEP_DURATION_MS);
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [loadingState]);
+  }, [loadingState, performanceMode, animateTo]);
 
   return (
-    <main className="v2-site-shell">
+    <main className="v2-site-shell" data-performance-mode={performanceMode}>
       <div className="v2-side-shader v2-side-shader-left" aria-hidden="true" />
       <div className="v2-side-shader v2-side-shader-right" aria-hidden="true" />
       <section
@@ -269,29 +350,31 @@ export function V2Experience() {
           data-animating={isAnimating}
         >
           <V2MobileShell>
-            <div ref={stageRef} className="v2-phone-stage" style={{ touchAction: "none" }}>
+            <div
+              ref={stageRef}
+              className="v2-phone-stage"
+              data-performance-mode={performanceMode}
+              style={{ touchAction: performanceMode === "full" ? "none" : "manipulation" }}
+            >
               <div className="media-stage" aria-hidden="true" data-fallback={videoFailed}>
-                <img className="media-layer media-poster" src={manifest.poster} alt="" draggable={false} />
+                <img className="media-layer media-poster" src={videoFailed ? manifest.contactPoster : manifest.poster} alt="" draggable={false} />
                 {!videoFailed ? (
                   <ScrollVideo
                     src={variant.video}
                     mobileSrc={variant.video}
                     poster={manifest.poster}
                     progress={visualProgress}
-                    onReady={() => setLoadingState((curr) => curr === "loading" ? "ready" : curr)}
-                    onError={() => {
-                      setVideoFailed(true);
-                      setLoadingState((curr) => curr === "loading" ? "ready" : curr);
+                    onReady={() => setMediaReady(true)}
+                    onBufferProgress={(next) => {
+                      setBufferProgress((current) => Math.max(current, next));
                     }}
-                    onStall={() => {
-                      setVideoFailed(true);
-                      setLoadingState((curr) => curr === "loading" ? "ready" : curr);
-                    }}
+                    onError={handleVideoError}
+                    onStall={() => undefined}
                   />
                 ) : null}
                 <div className="media-vignette" />
               </div>
-              
+
               <TopBar
                 compact={visualProgress > 0.08}
                 introVisible={introVisible}
@@ -300,35 +383,43 @@ export function V2Experience() {
               />
 
               <StoryOverlay
-                chapterId={active.id as StoryChapterId}
-                progress={active.localProgress}
+                progress={visualProgress}
                 visible={loadingState === "active"}
               />
-              {loadingState === "active" ? (
-                <ControlCenter
-                  defaultSoundEnabled={false}
-                  soundEnabled={soundEnabled}
-                  onSoundChange={setSoundEnabled}
-                  interfaceVisible={interfaceVisible}
-                  onInterfaceChange={setInterfaceVisible}
-                />
+              {loadingState === "black" && !mediaReady ? (
+                <V2LoadMeter progress={bufferProgress} mediaReady={mediaReady} />
               ) : null}
-              {loadingState === "active" && interfaceVisible ? (
+              {loadingState === "active" ? (
+                <>
+                  <ExperienceTools
+                    performanceMode={performanceMode}
+                    onPerformanceChange={changePerformanceMode}
+                  />
+                  <PersistentCallButton />
+                </>
+              ) : null}
+              {loadingState === "active" && active.id !== "contact" && performanceMode === "full" ? (
                 <div className="v2-interface-chrome">
-                  <ConstructionTimeline lanes={lanes} progress={visualProgress} />
-                  <V2ChapterNav activeId={active.id} chapters={chapters} onSelect={jumpTo} />
+                  <V2StopNav
+                    activeIndex={activeStopIndex}
+                    loadProgress={bufferProgress}
+                    stops={storyStops}
+                    onSelect={jumpToStop}
+                  />
                 </div>
+              ) : null}
+              {loadingState === "active" && active.id !== "contact" && performanceMode === "lite" ? (
+                <LiteStepControls
+                  currentIndex={currentStepIndex}
+                  totalSteps={STEPS.length}
+                  onPrevious={() => stepToIndex(currentStepIndex - 1)}
+                  onNext={() => stepToIndex(currentStepIndex + 1)}
+                />
               ) : null}
             </div>
           </V2MobileShell>
         </div>
       </section>
-      <StorySoundscape
-        source={manifest.sound.scrubTrack}
-        durationSeconds={manifest.sound.durationSeconds}
-        enabled={soundEnabled}
-        progress={visualProgress}
-      />
     </main>
   );
 }

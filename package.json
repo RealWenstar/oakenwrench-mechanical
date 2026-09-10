@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
+    "build:vercel": "next build",
+    "test:vercel": "npm run build:vercel && node --test \"tests/*.test.mjs\"",
     "start": "vinext start",
     "test": "npm run build && node --test \"tests/*.test.mjs\"",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

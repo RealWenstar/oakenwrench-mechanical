@@ -18,7 +18,7 @@ test("publishes Dave's direct Facebook, Messenger, and WhatsApp contact links", 
   );
 });
 
-test("uses a centered Oakenwrench beacon driven by discrete animation state", async () => {
+test("uses a centered Oakenwrench beacon driven by the restored discrete animation state", async () => {
   const [source, experience, css] = await Promise.all([
     readFile(new URL("app/components/TopBar.tsx", projectRoot), "utf8"),
     readFile(new URL("app/v2/V2Experience.tsx", projectRoot), "utf8"),
@@ -28,7 +28,7 @@ test("uses a centered Oakenwrench beacon driven by discrete animation state", as
   assert.match(source, /\/media\/brand\/oakenwrench-mark\.png/);
   assert.doesNotMatch(source, /data-scrolling/);
   assert.match(experience, /data-animating=\{isAnimating\}/);
-  assert.match(css, /data-animating="true"/);
+  assert.match(experience, /setIsAnimating/);
   assert.doesNotMatch(source, /Call Dave|call-pill/);
 });
 

@@ -29,10 +29,7 @@ export function StoryExperience() {
           data-chapter={active.id}
         >
           <TimelineMedia story={storyTimeline} progress={progress} />
-          <StoryOverlay
-            chapterId={active.id}
-            progress={active.localProgress}
-          />
+          <StoryOverlay progress={progress} />
         </div>
       </section>
       <ChapterProgress

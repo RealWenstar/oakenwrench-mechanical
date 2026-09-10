@@ -1,74 +1,60 @@
 {
   "version": 2,
   "defaultVariant": "latest",
-  "poster": "/media/v2/oakenwrench-v2-latest-poster.webp",
+  "poster": "/media/v2/oakenwrench-v2-upscaled-poster.webp",
+  "contactPoster": "/media/v2/oakenwrench-v2-contact-poster.webp",
   "shell": {
     "mode": "mobile-only",
     "aspectRatio": "9:16",
     "maxWidthPx": 430,
     "centered": true
   },
-  "sound": {
-    "defaultEnabled": false,
-    "scrubTrack": "/media/v2/audio/oakenwrench-v2-latest.m4a",
-    "durationSeconds": 50.538667
-  },
   "variants": [
     {
       "id": "latest",
       "label": "Latest cut",
-      "video": "/media/v2/oakenwrench-v2-latest-intraframe.mp4",
-      "durationSeconds": 50.538667,
+      "video": "/media/v2/oakenwrench-v2-mobile-608-intraframe.mp4",
+      "durationSeconds": 49.533333,
       "scrollVh": 1120
     }
   ],
   "chapters": [
-    { "id": "garage", "label": "Garage", "start": 0, "end": 0.18 },
-    { "id": "truck", "label": "Truck", "start": 0.18, "end": 0.34 },
-    { "id": "equipment", "label": "Equipment", "start": 0.34, "end": 0.72 },
-    { "id": "contact", "label": "Contact", "start": 0.72, "end": 1 }
+    { "id": "garage", "label": "Garage", "start": 0, "end": 0.16 },
+    { "id": "truck", "label": "Truck", "start": 0.16, "end": 0.34 },
+    { "id": "equipment", "label": "Equipment", "start": 0.34, "end": 0.88 },
+    { "id": "contact", "label": "Contact", "start": 0.88, "end": 1 }
   ],
   "lanes": [
     {
       "id": "visual",
       "cues": [
         { "id": "closed-door", "at": 0, "label": "Closed garage at blue dusk" },
-        { "id": "door-opening", "at": 0.08, "label": "Door rises with the scroll" },
-        { "id": "truck-reveal", "at": 0.18, "label": "Heavy-duty truck reveal" },
+        { "id": "door-opening", "at": 0.04, "label": "Door rises with the scroll" },
+        { "id": "truck-reveal", "at": 0.16, "label": "Heavy-duty truck reveal" },
         { "id": "truck-pass", "at": 0.27, "label": "Camera passes the truck" },
         { "id": "yard-equipment", "at": 0.34, "label": "Loader and mower reveal" },
-        { "id": "small-engines", "at": 0.49, "label": "Small-engine lineup" },
-        { "id": "workbench", "at": 0.72, "label": "Workbench and tools" },
-        { "id": "contact-device", "at": 0.91, "label": "Contact device settles" }
-      ]
-    },
-    {
-      "id": "audio",
-      "cues": [
-        { "id": "dusk-room-tone", "at": 0, "label": "Cold dusk room tone" },
-        { "id": "door-motor", "at": 0.08, "label": "Garage motor and rollers" },
-        { "id": "truck-pass", "at": 0.22, "label": "Truck engine and pass-by" },
-        { "id": "equipment-room", "at": 0.42, "label": "Workshop equipment ambience" },
-        { "id": "tool-details", "at": 0.72, "label": "Metal tools and bench texture" },
-        { "id": "contact-settle", "at": 0.91, "label": "Audio settles for CTA" }
+        { "id": "small-engines", "at": 0.48, "label": "Small-engine lineup" },
+        { "id": "smoke-transition", "at": 0.62, "label": "Smoke transition into the workbench" },
+        { "id": "workbench", "at": 0.68, "label": "Workbench and tools" },
+        { "id": "contact-device", "at": 0.93, "label": "Contact device settles" }
       ]
     },
     {
       "id": "ui",
       "cues": [
         { "id": "garage-copy", "at": 0, "label": "Garage introduction" },
-        { "id": "truck-copy", "at": 0.18, "label": "Heavy-duty services" },
+        { "id": "truck-copy", "at": 0.16, "label": "Heavy-duty services" },
         { "id": "equipment-copy", "at": 0.34, "label": "Equipment services" },
-        { "id": "contact-actions", "at": 0.72, "label": "One-tap contact actions" }
+        { "id": "contact-actions", "at": 0.88, "label": "One-tap contact actions" }
       ]
     },
     {
       "id": "qa",
       "cues": [
         { "id": "garage-geometry", "at": 0, "label": "Verify door geometry" },
-        { "id": "truck-identity", "at": 0.18, "label": "Verify truck continuity" },
+        { "id": "truck-identity", "at": 0.16, "label": "Verify truck continuity" },
         { "id": "equipment-anatomy", "at": 0.34, "label": "Verify equipment continuity" },
-        { "id": "contact-space", "at": 0.72, "label": "Verify CTA readability" }
+        { "id": "contact-space", "at": 0.88, "label": "Verify CTA readability" }
       ]
     }
   ]

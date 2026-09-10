@@ -27,7 +27,7 @@ test("server-renders the complete Oakenwrench v2 construction shell", async () =
   assert.doesNotMatch(html, /class="story-chapter"/);
   assert.match(html, /src="\/media\/brand\/oakenwrench-mark\.png"/);
   assert.doesNotMatch(html, /Motion lab · v2/);
-  assert.match(html, /oakenwrench-v2-latest-poster\.webp/);
+  assert.match(html, /oakenwrench-v2-upscaled-poster\.webp/);
   assert.doesNotMatch(html, />Raw<|>Clean</);
   assert.doesNotMatch(html, /Open control center/);
   assert.doesNotMatch(html, /Call Dave|call-pill/);

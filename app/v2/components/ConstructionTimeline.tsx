@@ -1,10 +1,9 @@
 "use client";
 
 type Cue = { id: string; at: number; label?: string };
-export type ConstructionLane = { id: "visual" | "audio" | "ui" | "qa"; cues: Cue[] };
+export type ConstructionLane = { id: "visual" | "ui" | "qa"; cues: Cue[] };
 
 const laneLabels = {
-  audio: "Audio",
   visual: "Visual",
   ui: "UI",
   qa: "QA",

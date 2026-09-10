@@ -1,0 +1,13 @@
+.playwright-cli/
+output/
+tmp/
+docs/overnight-qa/
+artifacts/
+coverage/
+tests/
+*.log
+public/media/v2/benchmark_60fps/
+public/media/v2/oakenwrench-v2-latest-intraframe.mp4
+public/media/v2/oakenwrench-v2-latest-scrub.mp4
+public/media/v2/oakenwrench-v2-upscaled-crf21-intraframe.mp4
+public/media/v2/audio/

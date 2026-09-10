@@ -8,7 +8,7 @@ export function TopBar({
 }: {
   compact: boolean;
   introVisible?: boolean;
-  loadingState?: "loading" | "ready" | "opening" | "active";
+  loadingState?: "black" | "ready" | "holding" | "opening" | "truck_exit" | "active" | "loading" | string;
   onTapLogo?: () => void;
 }) {
   return (
@@ -24,7 +24,7 @@ export function TopBar({
           href="#story"
           aria-label="Oakenwrench Mechanical — back to the garage"
           onClick={(e) => {
-            if (loadingState === "ready" && onTapLogo) {
+            if ((loadingState === "ready" || loadingState === "holding") && onTapLogo) {
               e.preventDefault();
               onTapLogo();
             } else if (loadingState !== "active") {
