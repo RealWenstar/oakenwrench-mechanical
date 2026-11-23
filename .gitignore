@@ -43,3 +43,17 @@ next-env.d.ts
 
 # local high-resolution Kling masters and rejected generations
 /artifacts/
+
+# databases and local test DBs
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# internal agent states and test outputs
+/.agents/
+/.playwright-cli/
+/tmp/
+/output/
+*.tsbuildinfo
+
